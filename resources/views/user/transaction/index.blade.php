@@ -26,6 +26,7 @@
         @endif
     @endsession
     <h1>Transaction</h1>
+    <h5><a href="{{route('test')}}">Main</a></h5>
     <hr>
     <form method="post" action="{{ route('transaction.import') }}">
         @csrf
