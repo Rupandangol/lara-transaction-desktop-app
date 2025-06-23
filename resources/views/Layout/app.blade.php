@@ -1,12 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Panel</title>
-    @vite('resources/css/app.css')
-</head>
-
+@include('layout.header')
 <body class="bg-gray-100 text-gray-800 font-sans antialiased">
 
     <div class="flex min-h-screen">
@@ -14,15 +6,21 @@
         <!-- Sidebar -->
         @include('layout.sidebar')
 
-        <!-- Main Content -->
-        <main class="flex-1 p-6 overflow-y-auto bg-gray-50">
-            <div class="p-5">
-                @yield('content')
-            </div>
+        <!-- Main Content Area -->
+        <main class="flex-1 bg-gray-50 overflow-y-auto">
+            <!-- Top bar (optional) -->
+            <header class="bg-white shadow px-6 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-semibold text-gray-800">@yield('content-header')</h1>
+                {{-- Add profile dropdown / logout button here --}}
+            </header>
 
+            <!-- Page content -->
+            <section class="p-6">
+                @yield('content')
+            </section>
         </main>
+
     </div>
 
 </body>
-
-</html>
+@include('layout.footer')
