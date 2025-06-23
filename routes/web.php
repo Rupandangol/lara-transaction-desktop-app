@@ -7,10 +7,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     // User::factory()->createOne();
     // Transaction::factory()->createOne();
-    $user = Transaction::all();
+    // $user = Transaction::all();
     // $transactions = Transaction::all();
-    return view('welcome');
-});
+    // return view('welcome');
+    return view('user.dashboard');
+})->name('test');
 
 Route::get('/transactions', [TransactionsController::class, 'index'])->name('transaction.index');
 Route::post('/transactions/import', [TransactionsController::class, 'import'])->name('transaction.import');
