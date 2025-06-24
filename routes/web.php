@@ -10,6 +10,7 @@ Auth::routes();
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/transactions', [TransactionsController::class, 'index'])->name('transaction.index');
     Route::post('/transactions/import', [TransactionsController::class, 'import'])->name('transaction.import');
+    Route::get('/transaction/sample', [TransactionsController::class, 'sample'])->name('transaction.sample');
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 });
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

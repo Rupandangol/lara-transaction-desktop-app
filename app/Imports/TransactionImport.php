@@ -4,10 +4,13 @@ namespace App\Imports;
 
 use App\Models\Transaction;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 
-class TransactionImport implements ToModel, WithStartRow
+class TransactionImport implements ToModel, WithStartRow, WithChunkReading, WithBatchInserts
 {
     public function startrow(): int
     {
@@ -28,8 +31,16 @@ class TransactionImport implements ToModel, WithStartRow
                 'credit' => $row[4],
                 'status' => $row[5],
                 'channel' => $row[7],
-                'user_id' => 1
+                'user_id' => Auth::user()->id
             ]);
         }
+    }
+    public function batchSize(): int
+    {
+        return 1000;
+    }
+    public function chunkSize(): int
+    {
+        return 1000;
     }
 }
