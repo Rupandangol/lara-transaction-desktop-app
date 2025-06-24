@@ -14,8 +14,16 @@
     @endif
 
     <div class="container mx-auto px-4">
-        <form method="POST" action="{{ route('transaction.import') }}" class="mb-6">
+        <form method="POST" action="{{ route('transaction.import') }}" enctype="multipart/form-data" class="mb-6">
             @csrf
+            <div>
+                <label class="block text-sm font-medium text-gray-700" for="transaction_file">Excel or Csv</label>
+                <input class="mt-1 block  border border-gray-300 rounded px-3 py-2 mb-2" type="file"
+                    name="transaction_file">
+                @if ($errors->has('transaction_file'))
+                    <code class="text-red-800">{{ $errors->first('transaction_file') }}</code>
+                @endif
+            </div>
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
                 Import
             </button>
@@ -108,7 +116,7 @@
 
         <div class="bg-white mt-4 p-6 rounded shadow-md">
             <h2 class="text-lg font-semibold mb-4">Top expenses</h2>
-         <canvas id="doughnutChart" class="w-150 h-64 mx-auto"></canvas>
+            <canvas id="doughnutChart" class="w-150 h-64 mx-auto"></canvas>
         </div>
     </div>
 @endsection
