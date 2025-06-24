@@ -6,14 +6,17 @@ use App\Imports\TransactionImport;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Native\Laravel\Facades\Alert;
+use Native\Laravel\Facades\Notification;
 
 class TransactionsController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DB::table('transactions');
+        $query = DB::table('transactions')->where('user_id', Auth::user()->id);
         if ($request->filled('year_month')) {
             $query->whereYear('date_time', Carbon::parse($request->get('year_month'))->format('Y'))
                 ->whereMonth('date_time', Carbon::parse($request->get('year_month'))->format('m'));
@@ -50,7 +53,7 @@ class TransactionsController extends Controller
             ->groupBy('hour')
             ->orderBy('hour')
             ->get();
-        $transactions = $query->orderByDesc('date_time')->simplePaginate(10);
+        $transactions = $query->orderByDesc('date_time')->simplePaginate(10)->appends($request->only(['year_month', 'date', 'description']));
         $data = [
             'transactions' => $transactions,
             'total_transaction' => $total_transaction,
@@ -65,20 +68,25 @@ class TransactionsController extends Controller
     public function import(Request $request)
     {
         $validated = $request->validate([
-            'transaction_file' => 'required|mimes:xls,csv'
+            'transaction_file' => 'required|mimes:xls'
         ]);
         $uploaded = Excel::import(new TransactionImport, $validated['transaction_file']);
+
         if ($uploaded) {
+            Notification::title('Import completed')->message('Transaction import completed')->show();
             return back()
                 ->with([
                     'status' => 'success',
                     'message' => 'Uploaded Successful'
                 ]);
         }
+        Alert::new()
+            ->error('An error occurred', 'The pizza oven is broken');
         return back()
             ->with([
                 'status' => 'error',
                 'message' => 'Upload Failed'
             ]);
     }
+    public function sample() {}
 }

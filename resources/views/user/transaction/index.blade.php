@@ -17,14 +17,20 @@
         <form method="POST" action="{{ route('transaction.import') }}" enctype="multipart/form-data" class="mb-6">
             @csrf
             <div>
-                <label class="block text-sm font-medium text-gray-700" for="transaction_file">Excel or Csv</label>
+                <label class="block text-sm font-medium text-gray-700" for="transaction_file">Excel Upload</label>
                 <input class="mt-1 block  border border-gray-300 rounded px-3 py-2 mb-2" type="file"
                     name="transaction_file">
                 @if ($errors->has('transaction_file'))
                     <code class="text-red-800">{{ $errors->first('transaction_file') }}</code>
                 @endif
             </div>
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            <p class="mt-2 text-sm text-gray-600">
+                Upload an Excel file with the following columns:
+                <span class="font-medium text-gray-800">sn(Optional),date_time,description,debit,credit,status,balance(Optional),channel</span>.
+                You can download a <a href="{{ route('transaction.sample') }}" class="text-blue-600 hover:underline">sample
+                    file</a>.
+            </p>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700">
                 Import
             </button>
         </form>
