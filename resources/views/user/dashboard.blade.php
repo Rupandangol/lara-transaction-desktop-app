@@ -6,5 +6,6 @@
         <div class="p-4 bg-white rounded shadow">Card 1</div>
         <div class="p-4 bg-white rounded shadow">Card 2</div>
         <div class="p-4 bg-white rounded shadow">Card 3</div>
+        <a href="{{route('login')}}" class="bg-white rounded shadow-md p-2">Login</a>
     </div>
 @endsection
