@@ -64,23 +64,10 @@ class TransactionsController extends Controller
     }
     public function import(Request $request)
     {
-        // $file = public_path('/statement/Statement_2025-01-01_to_2025-03-01_2025-05-27_17_25_32.xls');
-        $file = public_path('/statement/Statement_2025-05-28_to_2025-05-31_2025-06-05_15_01_44.xls');
-        if (!$file) {
-            return back()
-                ->with([
-                    'status' => 'error',
-                    'message' => 'file doesnt exists or issue on file'
-                ]);
-        }
-        if (!is_file($file)) {
-            return back()
-                ->with([
-                    'status' => 'error',
-                    'message' => 'file doesnt exists or issue on file'
-                ]);
-        }
-        $uploaded = Excel::import(new TransactionImport, $file);
+        $validated = $request->validate([
+            'transaction_file' => 'required|mimes:xls,csv'
+        ]);
+        $uploaded = Excel::import(new TransactionImport, $validated['transaction_file']);
         if ($uploaded) {
             return back()
                 ->with([
