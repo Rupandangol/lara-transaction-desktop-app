@@ -26,7 +26,7 @@
             <span>Transaction</span>
         </a>
 
-        <a href="#"
+        <a href="{{route('settings.index')}}"
            class="flex items-center px-4 py-2 rounded-md hover:bg-indigo-600 transition">
             <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" stroke-width="2"
                  viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" /></svg>

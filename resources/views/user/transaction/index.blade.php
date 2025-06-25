@@ -13,7 +13,7 @@
         </div>
     @endif
 
-    <div class="container mx-auto px-4">
+    <div>
         <form method="POST" action="{{ route('transaction.import') }}" enctype="multipart/form-data" class="mb-6">
             @csrf
             <div>
@@ -116,19 +116,21 @@
         <div class="mt-6">
             {{ $transactions->links() }}
         </div>
-        <div class="bg-white mt-4 p-6 rounded shadow-md">
-            <h2 class="text-lg font-semibold mb-4">Month expenses</h2>
-            <canvas id="lineChart" class="w-full h-64"></canvas>
-        </div>
-        <div class="bg-white mt-4 p-6 rounded shadow-md">
-            <h2 class="text-lg font-semibold mb-4">Over all hour based spendings</h2>
-            <canvas id="barChart" class="w-full h-64"></canvas>
-        </div>
+        @if ($total_transaction != 0)
+            <div class="bg-white mt-4 p-6 rounded shadow-md">
+                <h2 class="text-lg font-semibold mb-4">Month expenses</h2>
+                <canvas id="lineChart" class="w-full h-64"></canvas>
+            </div>
+            <div class="bg-white mt-4 p-6 rounded shadow-md">
+                <h2 class="text-lg font-semibold mb-4">Over all hour based spendings</h2>
+                <canvas id="barChart" class="w-full h-64"></canvas>
+            </div>
 
-        <div class="bg-white mt-4 p-6 rounded shadow-md">
-            <h2 class="text-lg font-semibold mb-4">Top expenses</h2>
-            <canvas id="doughnutChart" class="w-150 h-64 mx-auto"></canvas>
-        </div>
+            <div class="bg-white mt-4 p-6 rounded shadow-md">
+                <h2 class="text-lg font-semibold mb-4">Top expenses</h2>
+                <canvas id="doughnutChart" class="w-150 h-64 mx-auto"></canvas>
+            </div>
+        @endif
     </div>
 @endsection
 
@@ -175,7 +177,7 @@
         });
 
         const doughnutLabel = @json($top_expenses->map(fn($item) => $item->description));
-        const doughnutData = @json($top_expenses->map(fn($item) => $item->total));
+        const doughnutData = @json($top_expenses->map(fn($item) => $item->debit_sum));
         const doughnutctx = document.getElementById('doughnutChart').getContext('2d');
         const doughnutColors = [
             '#6366F1', '#F59E0B', '#10B981', '#EF4444', '#3B82F6',
