@@ -37,9 +37,10 @@ class TransactionsController extends Controller
             ->having('year', $nowYear)
             ->orderBy('month')
             ->get();
-        $top_expenses = (clone $query)->selectRaw("description , COUNT(*) as total,SUM(debit) as debit_sum,SUM(credit) as credit_sum")
+        $top_expenses = (clone $query)->selectRaw("description , COUNT(*) as total,SUM(debit) as debit_sum")
+            ->where('credit', 0)
             ->groupBy('description')
-            ->orderByDesc('total')
+            ->orderByDesc('debit_sum')
             ->limit(5)
             ->get();
         $over_all_forecast = (clone $query)
@@ -97,4 +98,26 @@ class TransactionsController extends Controller
             ]);
     }
     public function sample() {}
+
+    public function purge()
+    {
+        $confirmed = Alert::new()
+            ->title('Are you sure?')
+            ->buttons(['Yes, delete', 'Cancel'])
+            ->show('This will permanently delete all your transactions. This action cannot be undone.');
+
+        if (!$confirmed) {
+            $userId = Auth::id();
+
+            DB::transaction(function () use ($userId) {
+                Transaction::where('user_id', $userId)->delete();
+            });
+
+            Alert::new()
+                ->title('Transactions Deleted')
+                ->show('All your transactions have been successfully purged.');
+        }
+
+        return redirect()->back();
+    }
 }
