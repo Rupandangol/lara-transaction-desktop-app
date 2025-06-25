@@ -26,7 +26,8 @@
             </div>
             <p class="mt-2 text-sm text-gray-600">
                 Upload an Excel file with the following columns:
-                <span class="font-medium text-gray-800">sn(Optional),date_time,description,debit,credit,status,balance(Optional),channel</span>.
+                <span
+                    class="font-medium text-gray-800">sn(Optional),date_time,description,debit,credit,status,balance(Optional),channel</span>.
                 You can download a <a href="{{ route('transaction.sample') }}" class="text-blue-600 hover:underline">sample
                     file</a>.
             </p>
@@ -116,6 +117,10 @@
             {{ $transactions->links() }}
         </div>
         <div class="bg-white mt-4 p-6 rounded shadow-md">
+            <h2 class="text-lg font-semibold mb-4">Month expenses</h2>
+            <canvas id="lineChart" class="w-full h-64"></canvas>
+        </div>
+        <div class="bg-white mt-4 p-6 rounded shadow-md">
             <h2 class="text-lg font-semibold mb-4">Over all hour based spendings</h2>
             <canvas id="barChart" class="w-full h-64"></canvas>
         </div>
@@ -186,6 +191,35 @@
                     backgroundColor: doughnutColors, // indigo-500
                     borderColor: '#fff',
                     borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 5
+                        }
+                    }
+                }
+            }
+        });
+
+        const lineLabel = @json($monthly_expenses->map(fn($item) => $item->month));
+        const lineData = @json($monthly_expenses->map(fn($item) => $item->total_spent));
+        const linectx = document.getElementById('lineChart').getContext('2d');
+        const lineChart = new Chart(linectx, {
+            type: 'line',
+            data: {
+                labels: lineLabel,
+                datasets: [{
+                    label: 'Monthly Expenses',
+                    data: lineData,
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 4,
+                    tension: 0.1,
+                    fill: false,
                 }]
             },
             options: {

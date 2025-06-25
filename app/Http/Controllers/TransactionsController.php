@@ -30,6 +30,13 @@ class TransactionsController extends Controller
 
         $total_transaction = (clone $query)->count();
         $total_spent = (clone $query)->sum('debit');
+        $nowYear = Carbon::now()->format('Y');
+        $monthly_expenses = (clone $query)
+            ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
+            ->groupBy('month')
+            ->having('year', $nowYear)
+            ->orderBy('month')
+            ->get();
         $top_expenses = (clone $query)->selectRaw("description , COUNT(*) as total,SUM(debit) as debit_sum,SUM(credit) as credit_sum")
             ->groupBy('description')
             ->orderByDesc('total')
@@ -59,6 +66,7 @@ class TransactionsController extends Controller
             'total_transaction' => $total_transaction,
             'total_spent' => $total_spent,
             'top_expenses' => $top_expenses,
+            'monthly_expenses' => $monthly_expenses,
             'over_all_forecast' => round($over_all_forecast->avg('total_spent')),
             'three_month_forecast' => round($three_month_forecast->avg('total_spent')),
             'over_all_time_based_spendings' => $over_all_time_based_spendings,
