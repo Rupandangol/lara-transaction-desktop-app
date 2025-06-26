@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->datetime('date_time');
             $table->string('description')->nullable();
-            $table->integer('debit');
-            $table->integer('credit');
+            $table->integer('debit')->default(0);
+            $table->integer('credit')->default(0);
             $table->string('tag')->nullable();
             $table->string('status');
             $table->string('channel');

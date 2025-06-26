@@ -19,6 +19,7 @@ class Transaction extends Model
         'credit',
         'status',
         'channel',
+        'tag',
         'user_id',
     ];
 }
