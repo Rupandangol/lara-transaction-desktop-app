@@ -120,4 +120,118 @@ class TransactionsController extends Controller
 
         return redirect()->back();
     }
+    public function create()
+    {
+        return view('user.transaction.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'date_time' => 'required',
+            'description' => 'required|max:255',
+            'transaction_type' => 'required',
+            'amount' => 'required',
+            'status' => 'required',
+            'channel' => 'required',
+            'tag' => 'sometimes'
+        ]);
+        try {
+            $userId = Auth::user()->id;
+
+            $transaction = Transaction::create([
+                'date_time' => $validated['date_time'],
+                'description' => $validated['description'],
+                $validated['transaction_type'] => $validated['amount'],
+                'status' => $validated['status'],
+                'channel' => $validated['channel'],
+                'tag' => $validated['tag'],
+                'user_id' => $userId
+            ]);
+            Notification::title('Success')->message('Transaction added successfully')->show();
+            return redirect(route('transaction.index'));
+        } catch (\Exception $e) {
+            Alert::new()
+                ->type('error')
+                ->title('Error:' . $e->getCode())
+                ->show($e->getMessage());
+        }
+        return redirect()->back();
+    }
+
+    public function destroy($id)
+    {
+        $userId = Auth::user()->id;
+        $transaction = Transaction::where(['user_id' => $userId, 'id' => $id])->first();
+        if ($transaction) {
+            $confirmed = Alert::new()
+                ->title('Are you sure?')
+                ->buttons(['Yes, delete', 'Cancel'])
+                ->show('This will permanently delete all your transactions. This action cannot be undone.');
+            if (!$confirmed) {
+                $transaction->delete();
+                Alert::new()
+                    ->title('Success')
+                    ->show('Transaction deleted successfully.');
+            }
+        } else {
+            Alert::new()
+                ->title('Not Found')
+                ->show('Transaction is not found.');
+        }
+        return redirect()->back();
+    }
+    public function edit($id)
+    {
+        $userId = Auth::user()->id;
+        $transaction = Transaction::where(['id' => $id, 'user_id' => $userId])->first();
+        $type = $transaction->debit > 0 ? 'debit' : 'credit';
+        $data = [
+            'date_time' => $transaction->date_time,
+            'description' => $transaction->description,
+            'transaction_type' => $type,
+            'amount' => $transaction[$type],
+            'status' => $transaction->status,
+            'channel' => $transaction->channel,
+            'tag' => $transaction->tag,
+            'id' => $transaction->id
+        ];
+        return view('user.transaction.edit', [
+            'transaction' => $data
+        ]);
+    }
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'date_time' => 'required',
+            'description' => 'required|max:255',
+            'transaction_type' => 'required',
+            'amount' => 'required',
+            'status' => 'required',
+            'channel' => 'required',
+            'tag' => 'sometimes'
+        ]);
+        try {
+            $userId = Auth::user()->id;
+            $transaction = Transaction::where(['id' => $userId, 'user_id' => $userId])->first();
+            $transaction->update([
+                'date_time' => $validated['date_time'],
+                'description' => $validated['description'],
+                $validated['transaction_type'] => $validated['amount'],
+                $validated['transaction_type'] == 'credit' ? 'debit' : 'credit' => 0,
+                'status' => $validated['status'],
+                'channel' => $validated['channel'],
+                'tag' => $validated['tag'],
+                'user_id' => $userId
+            ]);
+            Notification::title('Success')->message('Transaction updated successfully')->show();
+            return redirect(route('transaction.index'));
+        } catch (\Exception $e) {
+            Alert::new()
+                ->type('error')
+                ->title('Error:' . $e->getCode())
+                ->show($e->getMessage());
+        }
+        return redirect()->back();
+    }
 }

@@ -14,27 +14,35 @@
     @endif
 
     <div>
-        <form method="POST" action="{{ route('transaction.import') }}" enctype="multipart/form-data" class="mb-6">
-            @csrf
+        <div class="flex justify-between">
+            <form method="POST" action="{{ route('transaction.import') }}" enctype="multipart/form-data" class="mb-6">
+                @csrf
+                <div>
+                    <label class="block text-sm font-medium text-gray-700" for="transaction_file">Excel Upload</label>
+                    <input class="mt-1 block  border border-gray-300 rounded px-3 py-2 mb-2" type="file"
+                        name="transaction_file">
+                    @if ($errors->has('transaction_file'))
+                        <code class="text-red-800">{{ $errors->first('transaction_file') }}</code>
+                    @endif
+                </div>
+                <p class="mt-2 text-sm text-gray-600">
+                    Upload an Excel file with the following columns:
+                    <span
+                        class="font-medium text-gray-800">sn(Optional),date_time,description,debit,credit,status,balance(Optional),channel</span>.
+                    You can download a <a href="{{ route('transaction.sample') }}"
+                        class="text-blue-600 hover:underline">sample
+                        file</a>.
+                </p>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700">
+                    Import
+                </button>
+            </form>
             <div>
-                <label class="block text-sm font-medium text-gray-700" for="transaction_file">Excel Upload</label>
-                <input class="mt-1 block  border border-gray-300 rounded px-3 py-2 mb-2" type="file"
-                    name="transaction_file">
-                @if ($errors->has('transaction_file'))
-                    <code class="text-red-800">{{ $errors->first('transaction_file') }}</code>
-                @endif
+                <a href="{{ route('transaction.create') }}"
+                    class="bg-green-600 px-4 py-2 mt-2 text-white  rounded-md hover:bg-green-800">+ Add</a>
             </div>
-            <p class="mt-2 text-sm text-gray-600">
-                Upload an Excel file with the following columns:
-                <span
-                    class="font-medium text-gray-800">sn(Optional),date_time,description,debit,credit,status,balance(Optional),channel</span>.
-                You can download a <a href="{{ route('transaction.sample') }}" class="text-blue-600 hover:underline">sample
-                    file</a>.
-            </p>
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700">
-                Import
-            </button>
-        </form>
+        </div>
+
 
         <form action="{{ route('transaction.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             @csrf
@@ -89,6 +97,7 @@
                             <th class="border px-4 py-2 text-left">Tag</th>
                             <th class="border px-4 py-2 text-left">Status</th>
                             <th class="border px-4 py-2 text-left">Channel</th>
+                            <th class="border px-4 py-2 text-left">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -99,9 +108,20 @@
                                 <td class="border px-4 py-2">{{ $item->description }}</td>
                                 <td class="border px-4 py-2">{{ $item->debit }}</td>
                                 <td class="border px-4 py-2">{{ $item->credit }}</td>
-                                <td class="border px-4 py-2">{{ $item->tag }}</td>
+                                <td class="border px-4 py-2">{{ $item->tag == null ? '-' : $item->tag }}</td>
                                 <td class="border px-4 py-2">{{ $item->status }}</td>
                                 <td class="border px-4 py-2">{{ $item->channel }}</td>
+                                <td class="border px-4 py-2">
+                                    <div class="flex items-center space-x-2">
+                                        <a class="bg-yellow-600 rounded-md p-2 text-white text-xs mr-1"
+                                            href="{{ route('transaction.edit', $item->id) }}">Edit</a>
+                                        <form method="post" action="{{ route('transaction.delete', $item->id) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="bg-red-700 rounded-md p-2 text-white text-xs">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
