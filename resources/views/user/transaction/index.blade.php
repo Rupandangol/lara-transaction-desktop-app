@@ -169,7 +169,7 @@
                 datasets: [{
                         label: 'Hour Based Spendings',
                         data: data,
-                        backgroundColor: 'rgba(99, 102, 241, 0.7)', // indigo-500
+                        backgroundColor: 'rgba(99, 102, 241, 0.7)',
                         borderColor: 'rgba(99, 102, 241, 1)',
                         borderWidth: 1,
                         borderRadius: 6
@@ -210,7 +210,7 @@
                 datasets: [{
                     label: 'Hour Based Spendings',
                     data: doughnutData,
-                    backgroundColor: doughnutColors, // indigo-500
+                    backgroundColor: doughnutColors,
                     borderColor: '#fff',
                     borderWidth: 2
                 }]
@@ -250,7 +250,10 @@
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 5
+                            stepSize: 5,
+                            callback: function(value) {
+                                return 'Rs. ' + value;
+                            }
                         }
                     }
                 }
