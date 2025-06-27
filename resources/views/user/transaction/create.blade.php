@@ -14,7 +14,7 @@
                 {{-- Date Time --}}
                 <div class="mb-4">
                     <label for="date_time" class="block text-sm font-medium text-gray-700">Date Time</label>
-                    <input value="{{ old('date_time') ?? '' }}" type="datetime-local" name="date_time" id="date_time"
+                    <input value="{{ old('date_time') ?? '' }}" type="datetime-local" max="{{now()}}" name="date_time" id="date_time"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-green-200 focus:border-green-500 p-2">
                     @if ($errors->has('date_time'))
                         <code class="text-red-600">{{ $errors->first('date_time') }}</code>
