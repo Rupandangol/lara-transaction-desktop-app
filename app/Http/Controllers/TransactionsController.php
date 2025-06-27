@@ -63,6 +63,11 @@ class TransactionsController extends Controller
             ->groupBy('hour')
             ->orderBy('hour')
             ->get();
+        $tag_related_spendings = (clone $query)
+            ->selectRaw('tag, COUNT(*) as total,SUM(debit) as debit_sum')
+            ->groupBy('tag')
+            ->orderByDesc('debit_sum')
+            ->get();
         $transactions = $query->orderByDesc('date_time')->simplePaginate(10)->appends($request->only(['year_month', 'date', 'description']));
         $data = [
             'transactions' => $transactions,
@@ -70,6 +75,7 @@ class TransactionsController extends Controller
             'total_spent' => $total_spent,
             'top_expenses' => $top_expenses,
             'monthly_expenses' => $monthly_expenses,
+            'tag_related_spendings' => $tag_related_spendings,
             'over_all_forecast' => round($over_all_forecast->avg('total_spent')),
             'three_month_forecast' => round($three_month_forecast->avg('total_spent')),
             'linear_regression_forecast' => round($linear_regression_forecast) ?? 0,

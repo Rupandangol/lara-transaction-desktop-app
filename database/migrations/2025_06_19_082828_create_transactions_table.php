@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->integer('debit')->default(0);
             $table->integer('credit')->default(0);
-            $table->string('tag')->nullable();
+            $table->string('tag')->default('others');
             $table->string('status');
-            $table->string('channel');
+            $table->string('channel')->default('others');
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->on('users')->references('id')->onDelete('cascade');
             $table->timestamps();

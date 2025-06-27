@@ -82,82 +82,130 @@
             </form>
         </div>
         <div class="bg-white p-5 shadow-md rounded">
-            <div class="mb-4 flex justify-between text-center">
-                <div class="bg-gray-100 rounded shadow-md p-2">
-                    <h5>Total Transactions: <strong>{{ $total_transaction }}</strong></h5>
-                    <h5>Total Spent: <strong>Rs.{{ $total_spent }}</strong></h5>
+
+            <div class="mb-5 flex flex-col md:flex-row justify-between gap-4 text-center">
+                {{-- Transactions Block --}}
+                <div
+                    class="bg-white border-l-4 border-blue-400 shadow-md rounded-lg p-4 w-full md:w-1/2 transition hover:scale-[1.01] hover:shadow-lg">
+                    <h4 class="text-xl font-semibold text-blue-700 mb-2">📂 Transactions Summary</h4>
+                    <div class="text-lg space-y-1">
+                        <p>Total Transactions: <strong>{{ $total_transaction }}</strong></p>
+                        <p>Total Spent: <strong>Rs.{{ $total_spent }}</strong></p>
+                    </div>
                 </div>
-                <div class="bg-gray-100 rounded shadow-md p-2">
-                    <h5>Over all forecast: <strong>Rs.{{ $over_all_forecast }}</strong></h5>
-                    <h5>Three month forecast: <strong>Rs.{{ $three_month_forecast }}</strong></h5>
-                    <h5>Linear Regression forecast: <strong>Rs.{{ $linear_regression_forecast }}</strong></h5>
+                {{-- Forecast Block --}}
+                <div
+                    class="bg-white border-l-4 border-green-700 shadow-lg rounded-lg p-4 w-full md:w-1/2  transition hover:scale-[1.02] hover:shadow-xl">
+                    <h4 class="text-xl font-semibold text-green-800 mb-2">📊 Forecast Summary</h4>
+                    <div class="text-lg space-y-1">
+                        <p>Over all forecast: <strong>Rs.{{ $over_all_forecast }}</strong></p>
+                        {{-- <p>Three month forecast: <strong>Rs.{{ $three_month_forecast }}</strong></p> --}}
+                        <p class="animate-pulse">Linear Regression forecast:
+                            <strong>Rs.{{ $linear_regression_forecast }}</strong>
+                        </p>
+                    </div>
                 </div>
             </div>
-
             <div class="overflow-x-auto">
-                <table class="min-w-full border border-gray-300">
-                    <thead class="bg-gray-100">
+                <table class="min-w-full border border-gray-300 text-sm text-gray-800">
+                    <thead class="bg-gray-200 text-left font-semibold">
                         <tr>
-                            <th class="border px-4 py-2 text-left">ID</th>
-                            <th class="border px-4 py-2 text-left">Date & Time</th>
-                            <th class="border px-4 py-2 text-left">Description</th>
-                            <th class="border px-4 py-2 text-left">Debit(Rs.)</th>
-                            <th class="border px-4 py-2 text-left">Credit(Rs.)</th>
-                            <th class="border px-4 py-2 text-left">Tag</th>
-                            <th class="border px-4 py-2 text-left">Status</th>
-                            <th class="border px-4 py-2 text-left">Channel</th>
-                            <th class="border px-4 py-2 text-left">Action</th>
+                            <th class="border px-4 py-2">ID</th>
+                            <th class="border px-4 py-2">Date & Time</th>
+                            <th class="border px-4 py-2">Description</th>
+                            <th class="border px-4 py-2">Debit (Rs.)</th>
+                            <th class="border px-4 py-2">Credit (Rs.)</th>
+                            <th class="border px-4 py-2">Tag</th>
+                            <th class="border px-4 py-2">Status</th>
+                            <th class="border px-4 py-2">Channel</th>
+                            <th class="border px-4 py-2 text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($transactions as $item)
-                            <tr class="hover:bg-gray-50">
+                            <tr class="hover:bg-gray-100 transition">
                                 <td class="border px-4 py-2">{{ $item->id }}</td>
                                 <td class="border px-4 py-2">{{ $item->date_time }}</td>
                                 <td class="border px-4 py-2">{{ $item->description }}</td>
                                 <td class="border px-4 py-2">{{ $item->debit }}</td>
                                 <td class="border px-4 py-2">{{ $item->credit }}</td>
-                                <td class="border px-4 py-2">{{ $item->tag == null ? '-' : $item->tag }}</td>
+                                <td class="border px-4 py-2">{{ $item->tag ?? '-' }}</td>
                                 <td class="border px-4 py-2">{{ $item->status }}</td>
                                 <td class="border px-4 py-2">{{ $item->channel }}</td>
-                                <td class="border px-4 py-2">
-                                    <div class="flex items-center space-x-2">
-                                        <a class="bg-yellow-600 rounded-md p-2 text-white text-xs mr-1"
-                                            href="{{ route('transaction.edit', $item->id) }}">Edit</a>
+                                <td class="border px-4 py-2 text-center">
+                                    <div class="inline-flex gap-2">
+                                        <a href="{{ route('transaction.edit', $item->id) }}"
+                                            class="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1 rounded text-xs">
+                                            Edit
+                                        </a>
                                         <form method="post" action="{{ route('transaction.delete', $item->id) }}">
                                             @csrf
                                             @method('DELETE')
-                                            <button class="bg-red-700 rounded-md p-2 text-white text-xs">Delete</button>
+                                            <button type="submit"
+                                                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs">
+                                                Delete
+                                            </button>
                                         </form>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center text-gray-500 py-4">No transaction data available.
+                                <td colspan="9" class="text-center text-gray-500 py-4">No transaction data available.
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
+
         </div>
         <div class="mt-6">
             {{ $transactions->links() }}
         </div>
         @if ($total_transaction != 0)
-            <div class="bg-white mt-4 p-6 rounded shadow-md">
-                <h2 class="text-lg font-semibold mb-4">Month expenses</h2>
-                <canvas id="lineChart" class="w-full h-64"></canvas>
-            </div>
-            <div class="bg-white mt-4 p-6 rounded shadow-md">
-                <h2 class="text-lg font-semibold mb-4">Over all hour based spendings</h2>
-                <canvas id="barChart" class="w-full h-64"></canvas>
-            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
 
-            <div class="bg-white mt-4 p-6 rounded shadow-md">
-                <h2 class="text-lg font-semibold mb-4">Top expenses</h2>
-                <canvas id="doughnutChart" class="w-150 h-64 mx-auto"></canvas>
+                {{-- Line Chart - Monthly Expenses --}}
+                <div class="bg-white p-6 rounded-2xl shadow-md w-full flex flex-col items-center text-center">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2 justify-center">
+                        📈 <span>Monthly Expenses</span>
+                    </h2>
+                    <div class="h-64 w-full">
+                        <canvas id="lineChart" class="mx-auto h-full"></canvas>
+                    </div>
+                </div>
+
+                {{-- Bar Chart - Hourly Spendings --}}
+                <div class="bg-white p-6 rounded-2xl shadow-md w-full flex flex-col items-center text-center">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2 justify-center">
+                        🕒 <span>Hourly Spendings</span>
+                    </h2>
+                    <div class="h-64 w-full">
+                        <canvas id="barChart" class="mx-auto h-full"></canvas>
+                    </div>
+                </div>
+
+                {{-- Doughnut Chart - Top Expenses --}}
+                <div class="bg-white p-6 rounded-2xl shadow-md w-full flex flex-col items-center text-center">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2 justify-center">
+                        💸 <span>Top Expenses</span>
+                    </h2>
+                    <div class="h-72 w-full">
+                        <canvas id="doughnutChart" class="mx-auto h-full"></canvas>
+                    </div>
+                </div>
+
+                {{-- Bar Chart - Tag-based Spendings --}}
+                <div class="bg-white p-6 rounded-2xl shadow-md w-full flex flex-col items-center text-center">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2 justify-center">
+                        🏷️ <span>Tag-based Spendings</span>
+                    </h2>
+                    <div class="h-64 w-full">
+                        <canvas id="barChart2" class="mx-auto h-full"></canvas>
+                    </div>
+                </div>
+
             </div>
         @endif
     </div>
@@ -263,6 +311,79 @@
                             callback: function(value) {
                                 return 'Rs. ' + value;
                             }
+                        }
+                    }
+                }
+            }
+        });
+
+        const barlabels2 = @json($tag_related_spendings->map(fn($item) => $item->tag));
+        const bardata2 = @json($tag_related_spendings->map(fn($item) => $item->total));
+        const barsums2 = @json($tag_related_spendings->map(fn($item) => $item->debit_sum));
+        const barctx2 = document.getElementById('barChart2').getContext('2d');
+
+        const barChart2 = new Chart(barctx2, {
+            type: 'bar',
+            data: {
+                labels: barlabels2,
+                datasets: [{
+                        label: 'Tag related count',
+                        data: bardata2,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(255, 205, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(201, 203, 207, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 159, 64)',
+                            'rgb(255, 205, 86)',
+                            'rgb(75, 192, 192)',
+                            'rgb(54, 162, 235)',
+                            'rgb(153, 102, 255)',
+                            'rgb(201, 203, 207)'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Tag related Spendings',
+                        data: barsums2,
+                        backgroundColor: [
+                            'rgba(201, 203, 207, 0.2)',
+                            'rgba(255, 205, 86, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 159, 64, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                        ],
+                        borderColor: [
+                            'rgb(201, 203, 207)',
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 159, 64)',
+                            'rgb(54, 162, 235)',
+                            'rgb(153, 102, 255)',
+                            'rgb(255, 205, 86)',
+                            'rgb(75, 192, 192)',
+
+                        ],
+                        borderWidth: 1,
+                        hidden: true // hides from the graph but appears in tooltip
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 5
                         }
                     }
                 }
