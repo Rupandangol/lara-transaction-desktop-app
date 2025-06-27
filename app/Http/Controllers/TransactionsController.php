@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Imports\TransactionImport;
 use App\Models\Transaction;
+use App\Services\LinearRegressionPredictionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,6 +44,7 @@ class TransactionsController extends Controller
             ->orderByDesc('debit_sum')
             ->limit(5)
             ->get();
+        $linear_regression_forecast = (new LinearRegressionPredictionService())->predict($monthly_expenses);
         $over_all_forecast = (clone $query)
             ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
             ->groupBy('year', 'month')
@@ -70,52 +72,74 @@ class TransactionsController extends Controller
             'monthly_expenses' => $monthly_expenses,
             'over_all_forecast' => round($over_all_forecast->avg('total_spent')),
             'three_month_forecast' => round($three_month_forecast->avg('total_spent')),
+            'linear_regression_forecast' => round($linear_regression_forecast) ?? 0,
             'over_all_time_based_spendings' => $over_all_time_based_spendings,
         ];
         return view('user.transaction.index', $data);
     }
+
+
     public function import(Request $request)
     {
         $validated = $request->validate([
-            'transaction_file' => 'required|mimes:xls'
+            'transaction_file' => 'required|mimes:xls,csv',
+            'source_type' => 'required|in:default,esewa'
         ]);
-        $uploaded = Excel::import(new TransactionImport, $validated['transaction_file']);
+        try {
+            $uploaded = Excel::import(new TransactionImport($validated['source_type']), $validated['transaction_file']);
 
-        if ($uploaded) {
-            Notification::title('Import completed')->message('Transaction import completed')->show();
+            if ($uploaded) {
+                Notification::title('Import completed')->message('Transaction import completed')->show();
+                return back()
+                    ->with([
+                        'status' => 'success',
+                        'message' => 'Uploaded Successful'
+                    ]);
+            }
+            Alert::new()
+                ->error('An error occurred', 'The pizza oven is broken');
             return back()
                 ->with([
-                    'status' => 'success',
-                    'message' => 'Uploaded Successful'
+                    'status' => 'error',
+                    'message' => 'Upload Failed'
                 ]);
+        } catch (\Exception $e) {
+            Alert::new()->type('error')->title('Error')->show('Try changing source type, or follow as sample provided');
+            return redirect()->back();
         }
-        Alert::new()
-            ->error('An error occurred', 'The pizza oven is broken');
-        return back()
-            ->with([
-                'status' => 'error',
-                'message' => 'Upload Failed'
-            ]);
     }
-    public function sample() {}
+    public function sample()
+    {
+        try {
+            $file = public_path('statement/Sample.csv');
+            return response()->download($file, 'Sample.csv');
+        } catch (\Exception $e) {
+            Alert::new()->type('error')->title('Error')->show($e->getMessage());
+            return redirect()->back();
+        }
+    }
 
     public function purge()
     {
-        $confirmed = Alert::new()
-            ->title('Are you sure?')
-            ->buttons(['Yes, delete', 'Cancel'])
-            ->show('This will permanently delete all your transactions. This action cannot be undone.');
+        try {
+            $confirmed = Alert::new()
+                ->title('Are you sure?')
+                ->buttons(['Yes, delete', 'Cancel'])
+                ->show('This will permanently delete all your transactions. This action cannot be undone.');
 
-        if (!$confirmed) {
-            $userId = Auth::id();
+            if (!$confirmed) {
+                $userId = Auth::id();
 
-            DB::transaction(function () use ($userId) {
-                Transaction::where('user_id', $userId)->delete();
-            });
+                DB::transaction(function () use ($userId) {
+                    Transaction::where('user_id', $userId)->delete();
+                });
 
-            Alert::new()
-                ->title('Transactions Deleted')
-                ->show('All your transactions have been successfully purged.');
+                Alert::new()
+                    ->title('Transactions Deleted')
+                    ->show('All your transactions have been successfully purged.');
+            }
+        } catch (\Exception $e) {
+            Alert::new()->type('error')->title('Error')->show($e->getMessage());
         }
 
         return redirect()->back();

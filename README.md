@@ -37,8 +37,9 @@ Describe the bug, feature idea, or improvement — we review all submissions!
 
 ## 🧠 Built With
 
-- Laravel (PHP)
+- Laravel (Native PHP/ electron)
 - Tailwind CSS
+- Sqlite
 - Chart.js
 
 ---
@@ -46,4 +47,4 @@ Describe the bug, feature idea, or improvement — we review all submissions!
 ## 📃 License
 
 MIT License  
-© {{ date('Y') }} Rupan Dangol
+© 2025 Rupan Dangol

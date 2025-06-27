@@ -12,9 +12,15 @@ use Maatwebsite\Excel\Concerns\WithStartRow;
 
 class TransactionImport implements ToModel, WithStartRow, WithChunkReading, WithBatchInserts
 {
+    protected string $sourceType;
+
+    public function __construct(string $sourceType = 'default')
+    {
+        $this->sourceType = $sourceType;
+    }
     public function startrow(): int
     {
-        return 10;
+        return $this->sourceType === 'esewa' ? 10 : 1;
     }
     /**
      * @param array $row
@@ -42,5 +48,13 @@ class TransactionImport implements ToModel, WithStartRow, WithChunkReading, With
     public function chunkSize(): int
     {
         return 1000;
+    }
+    public function getCsvSettings(): array
+    {
+        return [
+            'delimiter' => ',',
+            'enclosure' => '"',
+            'input_encoding' => 'UTF-8'
+        ];
     }
 }
