@@ -48,7 +48,7 @@
                 </form>
                 <div>
                     <a href="{{ route('transaction.create') }}"
-                        class="bg-green-600 px-4 py-2 mt-2 text-white  rounded-md hover:bg-green-800">+ Add</a>
+                        class="bg-green-600 px-4 py-2 mt-2 text-white  rounded-md md:block md:w-full hover:bg-green-800">+ Add</a>
                 </div>
             </div>
 
@@ -164,7 +164,7 @@
             {{ $transactions->links() }}
         </div>
         @if ($total_transaction != 0)
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
+            <div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
 
                 {{-- Line Chart - Monthly Expenses --}}
                 <div class="bg-white p-6 rounded-2xl shadow-md w-full flex flex-col items-center text-center">

@@ -13,7 +13,11 @@ class NativeAppServiceProvider implements ProvidesPhpIni
      */
     public function boot(): void
     {
-        Window::open();
+        Window::open()
+            ->width(980)
+            ->height(980)
+            ->minWidth(980)
+            ->minHeight(980);
     }
 
     /**
@@ -21,7 +25,6 @@ class NativeAppServiceProvider implements ProvidesPhpIni
      */
     public function phpIni(): array
     {
-        return [
-        ];
+        return [];
     }
 }
