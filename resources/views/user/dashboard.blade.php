@@ -5,7 +5,7 @@
 @endsection
 
 @section('content')
-    <h1 class="text-2xl font-bold mb-4">Welcome to Transaction Analytics App!</h1>
+    <h1 class="text-2xl font-bold mb-4">Welcome to Spendlite App!</h1>
 
     <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded mb-6" role="alert">
         <p class="font-semibold">Ongoing Project</p>
