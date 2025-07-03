@@ -9,7 +9,7 @@
 <aside id="sidebar" class="hidden md:flex w-64 bg-gray-900 text-white flex-col min-h-screen">
     <!-- Logo -->
     <div class="flex items-center justify-between h-16 border-b border-gray-700 px-4">
-        <img src="{{ asset('logo/logo.png') }}" alt="Logo" class="h-12 w-auto">
+        <img src="{{ asset('logo/logo.png') }}" alt="Logo" class="h-12 w-auto rounded-lg">
         <form action="{{route('logout')}}" method="post">
             @csrf
             <button class="bg-gray-500 text-white shadow-md rounded p-1 text-sm" type="submit">Logout</button>
