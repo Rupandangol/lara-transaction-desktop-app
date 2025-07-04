@@ -15,9 +15,10 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('/transactions/sample', [TransactionsController::class, 'sample'])->name('transaction.sample');
     Route::get('/transactions/purge', [TransactionsController::class, 'purge'])->name('transaction.purge');
     Route::get('/transactions/create', [TransactionsController::class, 'create'])->name('transaction.create');
+    Route::get('/transactions/export', [TransactionsController::class, 'export'])->name('transaction.export');
+    Route::post('/transactions/store', [TransactionsController::class, 'store'])->name('transaction.store');
     Route::get('/transactions/{id}/edit', [TransactionsController::class, 'edit'])->name('transaction.edit');
     Route::patch('/transactions/{id}/update', [TransactionsController::class, 'update'])->name('transaction.update');
-    Route::post('/transactions/store', [TransactionsController::class, 'store'])->name('transaction.store');
     Route::delete('/transactions/{id}', [TransactionsController::class, 'destroy'])->name('transaction.delete');
     Route::patch('/user', [UserController::class, 'update'])->name('user.update');
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');

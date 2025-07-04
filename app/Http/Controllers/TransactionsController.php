@@ -264,4 +264,50 @@ class TransactionsController extends Controller
         }
         return redirect()->back();
     }
+
+    public function export()
+    {
+        set_time_limit(0); // allow long execution time
+        $filename = 'transaction_' . Carbon::now()->format('Ymdhsi') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+        return response()->stream(function () {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, [
+                'Id',
+                'Date and time',
+                'Description',
+                'Debit(Rs.)',
+                'Credit(Rs.)',
+                'Tag',
+                'Status',
+                'Channel',
+            ]);
+            DB::table('transactions')
+                ->select('id', 'date_time', 'description', 'debit', 'credit', 'tag', 'status', 'channel')
+                ->orderByDesc('date_time')
+                ->chunk(1000, function ($items) use ($handle) {
+                    foreach ($items as $item) {
+                        fputcsv($handle, [
+                            $item->id,
+                            $item->date_time,
+                            $item->description,
+                            $item->debit,
+                            $item->credit,
+                            ucfirst($item->tag),
+                            $item->status,
+                            $item->channel,
+                        ]);
+                        ob_flush();
+                        flush();
+                    }
+                });
+            fclose($handle);
+        }, 200, $headers);
+    }
 }
