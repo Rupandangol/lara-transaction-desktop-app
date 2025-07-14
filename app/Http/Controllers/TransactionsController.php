@@ -8,6 +8,7 @@ use App\Services\LinearRegressionPredictionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use Native\Laravel\Facades\Alert;
@@ -15,6 +16,9 @@ use Native\Laravel\Facades\Notification;
 
 class TransactionsController extends Controller
 {
+    public const BASE_AMOUNT = 0;
+    public const TEN_MIN_IN_SEC = 600;
+
     public function index(Request $request)
     {
         $query = DB::table('transactions')->where('user_id', Auth::user()->id);
@@ -32,54 +36,68 @@ class TransactionsController extends Controller
         $total_transaction = (clone $query)->count();
         $total_spent = (clone $query)->sum('debit');
         $nowYear = Carbon::now()->format('Y');
-        $monthly_expenses = (clone $query)
-            ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
-            ->groupBy('month')
-            ->having('year', $nowYear)
-            ->orderBy('month')
-            ->get();
-        $top_expenses = (clone $query)->selectRaw("description , COUNT(*) as total,SUM(debit) as debit_sum")
-            ->where('credit', 0)
-            ->groupBy('description')
-            ->orderByDesc('debit_sum')
-            ->limit(5)
-            ->get();
-        $linear_regression_forecast = (new LinearRegressionPredictionService())->predict($monthly_expenses);
-        $over_all_forecast = (clone $query)
-            ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
-            ->groupBy('year', 'month')
-            ->orderByDesc('year')
-            ->orderByDesc('month')
-            ->get();
-        $three_month_forecast = (clone $query)
-            ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
-            ->where('date_time', '>=', Carbon::now()->subMonths(3))
-            ->groupBy('year', 'month')
-            ->orderByDesc('year')
-            ->orderByDesc('month')
-            ->get();
-        $over_all_time_based_spendings = (clone $query)
-            ->selectRaw("strftime('%H', date_time) as hour, COUNT(*) as total, SUM(debit) as sum")
-            ->groupBy('hour')
-            ->orderBy('hour')
-            ->get();
-        $tag_related_spendings = (clone $query)
-            ->selectRaw('tag, COUNT(*) as total,SUM(debit) as debit_sum')
-            ->groupBy('tag')
-            ->orderByDesc('debit_sum')
-            ->get();
+        $cacheKey = 'user_' . Auth::id() . '_aggregates_' . md5(json_encode($request->only(['year_month', 'date', 'description'])));
+        $aggregates = Cache::remember($cacheKey, self::TEN_MIN_IN_SEC, function () use ($query, $nowYear) {
+            $monthly_expenses =
+                (clone $query)
+                ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
+                ->groupBy('month')
+                ->having('year', $nowYear)
+                ->orderBy('month')
+                ->get();
+            $top_expenses = (clone $query)->selectRaw("description , COUNT(*) as total,SUM(debit) as debit_sum")
+                ->where('credit', self::BASE_AMOUNT)
+                ->groupBy('description')
+                ->orderByDesc('debit_sum')
+                ->limit(5)
+                ->get();
+            $linear_regression_forecast = (new LinearRegressionPredictionService())->predict($monthly_expenses);
+            $over_all_forecast = (clone $query)
+                ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
+                ->groupBy('year', 'month')
+                ->orderByDesc('year')
+                ->orderByDesc('month')
+                ->get();
+            $three_month_forecast = (clone $query)
+                ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
+                ->where('date_time', '>=', Carbon::now()->subMonths(3))
+                ->groupBy('year', 'month')
+                ->orderByDesc('year')
+                ->orderByDesc('month')
+                ->get();
+            $over_all_time_based_spendings = (clone $query)
+                ->selectRaw("strftime('%H', date_time) as hour, COUNT(*) as total, SUM(debit) as sum")
+                ->groupBy('hour')
+                ->orderBy('hour')
+                ->get();
+            $tag_related_spendings = (clone $query)
+                ->selectRaw('tag, COUNT(*) as total,SUM(debit) as debit_sum')
+                ->groupBy('tag')
+                ->orderByDesc('debit_sum')
+                ->get();
+            return [
+                'monthly_expenses' => $monthly_expenses,
+                'top_expenses' => $top_expenses,
+                'linear_regression_forecast' => round($linear_regression_forecast ?? 0),
+                'over_all_forecast' => round($over_all_forecast->avg('total_spent')),
+                'three_month_forecast' => round($three_month_forecast->avg('total_spent')),
+                'over_all_time_based_spendings' => $over_all_time_based_spendings,
+                'tag_related_spendings' => $tag_related_spendings,
+            ];
+        });
+
         $transactions = $query->orderByDesc('date_time')->simplePaginate(10)->appends($request->only(['year_month', 'date', 'description']));
         $data = [
             'transactions' => $transactions,
             'total_transaction' => $total_transaction,
             'total_spent' => $total_spent,
-            'top_expenses' => $top_expenses,
-            'monthly_expenses' => $monthly_expenses,
-            'tag_related_spendings' => $tag_related_spendings,
-            'over_all_forecast' => round($over_all_forecast->avg('total_spent')),
-            'three_month_forecast' => round($three_month_forecast->avg('total_spent')),
-            'linear_regression_forecast' => round($linear_regression_forecast) ?? 0,
-            'over_all_time_based_spendings' => $over_all_time_based_spendings,
+            'top_expenses' => $aggregates['top_expenses'],
+            'monthly_expenses' => $aggregates['monthly_expenses'],
+            'tag_related_spendings' => $aggregates['tag_related_spendings'],
+            'over_all_forecast' => $aggregates['over_all_forecast'],
+            'three_month_forecast' => $aggregates['three_month_forecast'],
+            'linear_regression_forecast' => $aggregates['linear_regression_forecast'] ?? self::BASE_AMOUNT,
+            'over_all_time_based_spendings' => $aggregates['over_all_time_based_spendings'],
         ];
         return view('user.transaction.index', $data);
     }
@@ -88,8 +106,10 @@ class TransactionsController extends Controller
     public function import(Request $request)
     {
         $validated = $request->validate([
-            'transaction_file' => 'required|mimes:xls,csv',
+            'transaction_file' => 'required|mimetypes:text/plain,text/csv,application/vnd.ms-excel',
             'source_type' => 'required|in:default,esewa'
+        ], [
+            'transaction_file.mimetypes' => 'The transaction file must be a valid CSV or Excel file.'
         ]);
         try {
             $uploaded = Excel::import(new TransactionImport($validated['source_type']), $validated['transaction_file']);
@@ -215,7 +235,7 @@ class TransactionsController extends Controller
     {
         $userId = Auth::user()->id;
         $transaction = Transaction::where(['id' => $id, 'user_id' => $userId])->first();
-        $type = $transaction->debit > 0 ? 'debit' : 'credit';
+        $type = $transaction->debit > self::BASE_AMOUNT ? 'debit' : 'credit';
         $data = [
             'date_time' => $transaction->date_time,
             'description' => $transaction->description,
@@ -248,7 +268,7 @@ class TransactionsController extends Controller
                 'date_time' => $validated['date_time'],
                 'description' => $validated['description'],
                 $validated['transaction_type'] => $validated['amount'],
-                $validated['transaction_type'] == 'credit' ? 'debit' : 'credit' => 0,
+                $validated['transaction_type'] == 'credit' ? 'debit' : 'credit' => self::BASE_AMOUNT,
                 'status' => $validated['status'],
                 'channel' => $validated['channel'],
                 'tag' => $validated['tag'],
@@ -267,7 +287,6 @@ class TransactionsController extends Controller
 
     public function export()
     {
-        set_time_limit(0); // allow long execution time
         $filename = 'transaction_' . Carbon::now()->format('Ymdhsi') . '.csv';
         $headers = [
             'Content-Type' => 'text/csv',
@@ -303,8 +322,6 @@ class TransactionsController extends Controller
                             $item->status,
                             $item->channel,
                         ]);
-                        ob_flush();
-                        flush();
                     }
                 });
             fclose($handle);
