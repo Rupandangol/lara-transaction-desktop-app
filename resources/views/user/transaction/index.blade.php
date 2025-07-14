@@ -16,7 +16,8 @@
     <div>
         <div class=" bg-white p-5 shadow-md rounded-md mb-5">
             <div class="flex justify-between">
-                <form method="POST" action="{{ route('transaction.import') }}" enctype="multipart/form-data" class="mb-6">
+                <form id="importForm" method="POST" action="{{ route('transaction.import') }}" enctype="multipart/form-data"
+                    class="mb-6 ">
                     @csrf
                     <div>
                         <label class="block text-sm font-medium text-gray-700" for="transaction_file">Excel Upload</label>
@@ -42,13 +43,16 @@
                             class="text-blue-600 hover:underline">sample
                             file</a>.
                     </p>
-                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700">
+                    <button type="submit" id="submitBtn"
+                        class="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700">
                         Import
                     </button>
+
                 </form>
                 <div>
                     <a href="{{ route('transaction.create') }}"
-                        class="bg-green-600 px-4 py-2 mt-2 text-white  rounded-md md:block md:w-full hover:bg-green-800">+ Add</a>
+                        class="bg-green-600 px-4 py-2 mt-2 text-sm mr-5 text-white  rounded-md md:block md:w-full hover:bg-green-800">+
+                        Add Transaction</a>
                 </div>
             </div>
 
@@ -224,7 +228,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                        label: 'Hour Based Spendings',
+                        label: 'Hour Based Spendings(Count)',
                         data: data,
                         backgroundColor: 'rgba(99, 102, 241, 0.7)',
                         borderColor: 'rgba(99, 102, 241, 1)',
@@ -233,7 +237,7 @@
                     },
 
                     {
-                        label: 'Spent',
+                        label: 'Spent(Rs.)',
                         data: sums,
                         backgroundColor: 'rgba(240, 180, 50, 0.2)', // Optional, or transparent
                         hidden: true // hides from the graph but appears in tooltip
@@ -265,7 +269,7 @@
             data: {
                 labels: doughnutLabel,
                 datasets: [{
-                    label: 'Hour Based Spendings',
+                    label: 'Spent (Rs.)',
                     data: doughnutData,
                     backgroundColor: doughnutColors,
                     borderColor: '#fff',
@@ -391,3 +395,17 @@
         });
     </script>
 @endsection
+
+{{-- @section('app-footer')
+    <script src="{{ asset('jquery/jquery-3.7.1.min.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('#importForm').on('submit', function() {
+                $('#submitBtn').prop('disabled', true);
+
+                // Show the loading message
+                $('#loadingIndicator').show();
+            });
+        });
+    </script>
+@endsection --}}
