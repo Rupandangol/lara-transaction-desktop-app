@@ -50,6 +50,6 @@ class TransactionObserver
 
     public function clearAggregatesForUser()
     {
-        Cache::tags(['user_' . Auth::user()->id . '_aggregates'])->flush();
+        Cache::flush();
     }
 }

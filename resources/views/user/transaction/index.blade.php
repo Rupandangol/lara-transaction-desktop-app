@@ -51,7 +51,7 @@
                 </form>
                 <div>
                     <a href="{{ route('transaction.create') }}"
-                        class="bg-green-600 px-4 py-2 mt-2 text-sm mr-5 text-white  rounded-md md:block md:w-full hover:bg-green-800">+
+                        class="bg-green-600 px-4 py-2 mt-2 text-sm mr-5 text-white  rounded-md md:block md:w-fit hover:bg-green-800">
                         Add Transaction</a>
                 </div>
             </div>
@@ -94,6 +94,7 @@
                     <h4 class="text-xl font-semibold text-blue-700 mb-2">📂 Transactions Summary</h4>
                     <div class="text-lg space-y-1">
                         <p>Total Transactions: <strong>{{ $total_transaction }}</strong></p>
+                        <p>Total Income: <strong>Rs.{{ $total_income }}</strong></p>
                         <p>Total Spent: <strong>Rs.{{ $total_spent }}</strong></p>
                     </div>
                 </div>
@@ -101,10 +102,27 @@
                 <div
                     class="bg-white border-l-4 border-green-700 shadow-lg rounded-lg p-4 w-full md:w-1/2  transition hover:scale-[1.02] hover:shadow-xl">
                     <h4 class="text-xl font-semibold text-green-800 mb-2">📊 Forecast Summary</h4>
-                    <div class="text-lg space-y-1">
+                    <div class="text-lg space-y-1 ">
                         <p>Over all forecast: <strong>Rs.{{ $over_all_forecast }}</strong></p>
                         {{-- <p>Three month forecast: <strong>Rs.{{ $three_month_forecast }}</strong></p> --}}
-                        <p class="animate-pulse">Linear Regression forecast:
+                        @if ($percent_change != 0)
+                            <p class="flex justify-center">Percentage Change:
+                                @if ($percent_change['type'] === 'increase')
+                                    <span title="Compared to last month, the expenses has increased"
+                                        class="text-white bg-red-600 rounded-lg px-1 ml-2 font-bold">
+                                        ↑
+                                    </span>
+                                @else
+                                    <span title="Compared to last month, the expenses has decreased"
+                                        class="text-white bg-green-600 rounded-lg px-1 ml-2 font-bold">
+                                        ↓
+                                    </span>
+                                @endif
+                                <strong class="">{{ $percent_change['change'] }} % </strong>
+
+                            </p>
+                        @endif
+                        <p class="animate-pulse">Linear Regression forecast (next month):
                             <strong>Rs.{{ $linear_regression_forecast }}</strong>
                         </p>
                     </div>
