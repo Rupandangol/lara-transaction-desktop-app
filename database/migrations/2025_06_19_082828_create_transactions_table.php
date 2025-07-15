@@ -13,16 +13,18 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->datetime('date_time');
+            $table->datetime('date_time')->index();
             $table->string('description')->nullable();
-            $table->integer('debit')->default(0);
-            $table->integer('credit')->default(0);
-            $table->string('tag')->default('others');
-            $table->string('status');
+            $table->integer('debit')->default(0)->index();
+            $table->integer('credit')->default(0)->index();
+            $table->string('tag')->default('others')->index();
+            $table->string('status')->index();
             $table->string('channel')->default('others');
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->on('users')->references('id')->onDelete('cascade');
             $table->timestamps();
+
+            $table->index(['user_id','date_time']);
         });
     }
 

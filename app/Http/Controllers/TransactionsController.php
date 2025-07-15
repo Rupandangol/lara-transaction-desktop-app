@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Imports\TransactionImport;
 use App\Models\Transaction;
 use App\Services\LinearRegressionPredictionService;
+use App\Services\PercentChangeForecast;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,11 +34,13 @@ class TransactionsController extends Controller
             $query->where('description', 'like', '%' . $request->get('description') . '%');
         }
 
-        $total_transaction = (clone $query)->count();
-        $total_spent = (clone $query)->sum('debit');
+
         $nowYear = Carbon::now()->format('Y');
         $cacheKey = 'user_' . Auth::id() . '_aggregates_' . md5(json_encode($request->only(['year_month', 'date', 'description'])));
         $aggregates = Cache::remember($cacheKey, self::TEN_MIN_IN_SEC, function () use ($query, $nowYear) {
+            $total_transaction = (clone $query)->count();
+            $total_spent = (clone $query)->sum('debit');
+            $total_income = (clone $query)->sum('credit');
             $monthly_expenses =
                 (clone $query)
                 ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
@@ -45,6 +48,10 @@ class TransactionsController extends Controller
                 ->having('year', $nowYear)
                 ->orderBy('month')
                 ->get();
+            if ($monthly_expenses->count() > 2) {
+                $percent_change = (new PercentChangeForecast())->changePercent($monthly_expenses->last() ?? self::BASE_AMOUNT, $monthly_expenses->reverse()->skip(1)->first() ?? self::BASE_AMOUNT);
+            }
+
             $top_expenses = (clone $query)->selectRaw("description , COUNT(*) as total,SUM(debit) as debit_sum")
                 ->where('credit', self::BASE_AMOUNT)
                 ->groupBy('description')
@@ -76,6 +83,10 @@ class TransactionsController extends Controller
                 ->orderByDesc('debit_sum')
                 ->get();
             return [
+                'total_transaction' => $total_transaction,
+                'total_spent' => $total_spent,
+                'total_income' => $total_income,
+                'percent_change' => $percent_change ?? self::BASE_AMOUNT,
                 'monthly_expenses' => $monthly_expenses,
                 'top_expenses' => $top_expenses,
                 'linear_regression_forecast' => round($linear_regression_forecast ?? 0),
@@ -85,12 +96,13 @@ class TransactionsController extends Controller
                 'tag_related_spendings' => $tag_related_spendings,
             ];
         });
-
         $transactions = $query->orderByDesc('date_time')->simplePaginate(10)->appends($request->only(['year_month', 'date', 'description']));
         $data = [
             'transactions' => $transactions,
-            'total_transaction' => $total_transaction,
-            'total_spent' => $total_spent,
+            'total_transaction' => $aggregates['total_transaction'],
+            'total_spent' => $aggregates['total_spent'],
+            'total_income' => $aggregates['total_income'],
+            'percent_change' => $aggregates['percent_change'],
             'top_expenses' => $aggregates['top_expenses'],
             'monthly_expenses' => $aggregates['monthly_expenses'],
             'tag_related_spendings' => $aggregates['tag_related_spendings'],
@@ -113,7 +125,7 @@ class TransactionsController extends Controller
         ]);
         try {
             $uploaded = Excel::import(new TransactionImport($validated['source_type']), $validated['transaction_file']);
-
+            self::cacheFlush();
             if ($uploaded) {
                 Notification::title('Import completed')->message('Transaction import completed')->show();
                 return back()
@@ -158,6 +170,7 @@ class TransactionsController extends Controller
 
                 DB::transaction(function () use ($userId) {
                     Transaction::where('user_id', $userId)->delete();
+                    self::cacheFlush();
                 });
 
                 Alert::new()
@@ -173,6 +186,10 @@ class TransactionsController extends Controller
     public function create()
     {
         return view('user.transaction.create');
+    }
+    public static function cacheFlush()
+    {
+        Cache::flush();
     }
 
     public function store(Request $request)
