@@ -65,6 +65,16 @@
                         class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
                 </div>
                 <div>
+                    <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
+                    <select name="year" id="year" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
+                        @for ($year = now()->year; $year >= 2000; $year--)
+                            <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
+                                {{ $year }}
+                            </option>
+                        @endfor
+                    </select>
+                </div>
+                <div>
                     <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
                     <input id="date" value="{{ request('date') ?? '' }}" name="date" type="date"
                         class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
@@ -228,6 +238,17 @@
                     </div>
                 </div>
 
+                {{-- Horizontal Bar Chart - percent changes --}}
+                @if ($percent_changes->isNotEmpty())
+                    <div class="bg-white p-6 rounded-2xl shadow-md w-full flex flex-col items-center text-center">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2 justify-center">
+                            % <span>Percent changes</span>
+                        </h2>
+                        <div class="h-64 w-full">
+                            <canvas id="horizontalBarChart" class="mx-auto h-full"></canvas>
+                        </div>
+                    </div>
+                @endif
             </div>
         @endif
     </div>
@@ -307,8 +328,8 @@
             }
         });
 
-        const lineLabel = @json($monthly_expenses->map(fn($item) => $item->month));
-        const lineData = @json($monthly_expenses->map(fn($item) => $item->total_spent));
+        const lineLabel = @json($monthly_expenses->map(fn($item) => \Carbon\Carbon::createFromFormat('m', $item->month)->format('M') ?? []));
+        const lineData = @json($monthly_expenses->map(fn($item) => $item->total_spent ?? []));
         const linectx = document.getElementById('lineChart').getContext('2d');
         const lineChart = new Chart(linectx, {
             type: 'line',
@@ -411,19 +432,33 @@
                 }
             }
         });
-    </script>
-@endsection
+        //Horizontal bar chart
+        const horizontalLabels = @json($percent_changes->map(fn($item) => \Carbon\Carbon::createFromFormat('m', $item['month'])->format('M')));
+        const horizontalData = @json($percent_changes->map(fn($item) => $item['changeAbs']));
+        const horizontalCtx = document.getElementById('horizontalBarChart').getContext('2d');
 
-{{-- @section('app-footer')
-    <script src="{{ asset('jquery/jquery-3.7.1.min.js') }}"></script>
-    <script>
-        $(document).ready(function() {
-            $('#importForm').on('submit', function() {
-                $('#submitBtn').prop('disabled', true);
-
-                // Show the loading message
-                $('#loadingIndicator').show();
-            });
+        const horizontalBarChart = new Chart(horizontalCtx, {
+            type: 'bar',
+            data: {
+                labels: horizontalLabels,
+                datasets: [{
+                    label: 'Change percent(%)',
+                    data: horizontalData,
+                    backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                elements: {
+                    bar: {
+                        borderWidth: 2,
+                    }
+                },
+            }
         });
     </script>
-@endsection --}}
+@endsection
