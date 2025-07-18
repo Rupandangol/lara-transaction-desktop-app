@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\TransactionActions\GetTransactionsAggregates;
 use App\Imports\TransactionImport;
 use App\Models\Transaction;
 use App\Services\LinearRegressionPredictionService;
@@ -15,8 +16,6 @@ use Maatwebsite\Excel\Facades\Excel;
 use Native\Laravel\Facades\Alert;
 use Native\Laravel\Facades\Notification;
 
-use function PHPUnit\Framework\isEmpty;
-
 class TransactionsController extends Controller
 {
     public const BASE_AMOUNT = 0;
@@ -24,6 +23,7 @@ class TransactionsController extends Controller
 
     public function index(Request $request)
     {
+        $nowYear = '';
         $query = DB::table('transactions')->where('user_id', Auth::user()->id);
         if ($request->filled('year_month')) {
             $query->whereYear('date_time', Carbon::parse($request->get('year_month'))->format('Y'))
@@ -36,90 +36,20 @@ class TransactionsController extends Controller
             $query->where('description', 'like', '%' . $request->get('description') . '%');
         }
         if ($request->filled('year')) {
-            $query->whereYear('date_time', Carbon::parse($request->get('year'))->format('Y'));
-            $nowYear = $request->get('year');
+            if ($request->get('year') != 'all') {
+                $query->whereYear('date_time', $request->get('year'));
+                $nowYear = $request->get('year');
+            }
         } else {
             $nowYear = Carbon::now()->format('Y');
+            $query->whereYear('date_time', $nowYear);
         }
-        $cacheKey = 'user_' . Auth::id() . '_aggregates_' . md5(json_encode($request->only(['year_month', 'date', 'description'])));
-        $aggregates = Cache::remember($cacheKey, self::TEN_MIN_IN_SEC, function () use ($query, $nowYear) {
-            $total_transaction = (clone $query)->count();
-            $total_spent = (clone $query)->sum('debit');
-            $total_income = (clone $query)->sum('credit');
-            $monthly_expenses =
-                (clone $query)
-                ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
-                ->groupBy('month')
-                ->having('year', $nowYear)
-                ->orderBy('month')
-                ->get();
+        $aggregates = app(GetTransactionsAggregates::class)->handle($query, $request, $nowYear);
 
-            if ($monthly_expenses->count() > 2) {
-                $percentChangeForecast = (new PercentChangeForecast());
-                $percent_change = $percentChangeForecast->changePercent($monthly_expenses->last() ?? self::BASE_AMOUNT, $monthly_expenses->reverse()->skip(1)->first() ?? self::BASE_AMOUNT);
-                $percent_changes = collect($percentChangeForecast->changesPercent($monthly_expenses));
-            }
-            $top_expenses = (clone $query)->selectRaw("description , COUNT(*) as total,SUM(debit) as debit_sum")
-                ->where('credit', self::BASE_AMOUNT)
-                ->groupBy('description')
-                ->orderByDesc('debit_sum')
-                ->limit(5)
-                ->get();
-            $linear_regression_forecast = (new LinearRegressionPredictionService())->predict($monthly_expenses);
-            $over_all_forecast = (clone $query)
-                ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
-                ->groupBy('year', 'month')
-                ->orderByDesc('year')
-                ->orderByDesc('month')
-                ->get();
-            $three_month_forecast = (clone $query)
-                ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
-                ->where('date_time', '>=', Carbon::now()->subMonths(3))
-                ->groupBy('year', 'month')
-                ->orderByDesc('year')
-                ->orderByDesc('month')
-                ->get();
-            $over_all_time_based_spendings = (clone $query)
-                ->selectRaw("strftime('%H', date_time) as hour, COUNT(*) as total, SUM(debit) as sum")
-                ->groupBy('hour')
-                ->orderBy('hour')
-                ->get();
-            $tag_related_spendings = (clone $query)
-                ->selectRaw('tag, COUNT(*) as total,SUM(debit) as debit_sum')
-                ->groupBy('tag')
-                ->orderByDesc('debit_sum')
-                ->get();
-
-            return [
-                'total_transaction' => $total_transaction,
-                'total_spent' => $total_spent,
-                'total_income' => $total_income,
-                'percent_change' => $percent_change ?? self::BASE_AMOUNT,
-                'percent_changes' => $percent_changes ?? collect([]),
-                'monthly_expenses' => $monthly_expenses,
-                'top_expenses' => $top_expenses,
-                'linear_regression_forecast' => round($linear_regression_forecast ?? 0),
-                'over_all_forecast' => round($over_all_forecast->avg('total_spent')),
-                'three_month_forecast' => round($three_month_forecast->avg('total_spent')),
-                'over_all_time_based_spendings' => $over_all_time_based_spendings,
-                'tag_related_spendings' => $tag_related_spendings,
-            ];
-        });
         $transactions = $query->orderByDesc('date_time')->simplePaginate(10)->appends($request->only(['year_month', 'date', 'description']));
         $data = [
             'transactions' => $transactions,
-            'total_transaction' => $aggregates['total_transaction'],
-            'total_spent' => $aggregates['total_spent'],
-            'total_income' => $aggregates['total_income'],
-            'percent_change' => $aggregates['percent_change'],
-            'percent_changes' => $aggregates['percent_changes'],
-            'top_expenses' => $aggregates['top_expenses'],
-            'monthly_expenses' => $aggregates['monthly_expenses'],
-            'tag_related_spendings' => $aggregates['tag_related_spendings'],
-            'over_all_forecast' => $aggregates['over_all_forecast'],
-            'three_month_forecast' => $aggregates['three_month_forecast'],
-            'linear_regression_forecast' => $aggregates['linear_regression_forecast'] ?? self::BASE_AMOUNT,
-            'over_all_time_based_spendings' => $aggregates['over_all_time_based_spendings'],
+            ...$aggregates
         ];
         return view('user.transaction.index', $data);
     }
