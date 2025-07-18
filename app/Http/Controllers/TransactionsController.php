@@ -46,7 +46,7 @@ class TransactionsController extends Controller
         }
         $aggregates = app(GetTransactionsAggregates::class)->handle($query, $request, $nowYear);
 
-        $transactions = $query->orderByDesc('date_time')->simplePaginate(10)->appends($request->only(['year_month', 'date', 'description']));
+        $transactions = $query->orderByDesc('date_time')->simplePaginate(10)->appends($request->only(['year', 'year_month', 'date', 'description']));
         $data = [
             'transactions' => $transactions,
             ...$aggregates
@@ -220,7 +220,7 @@ class TransactionsController extends Controller
         ]);
         try {
             $userId = Auth::user()->id;
-            $transaction = Transaction::where(['id' => $userId, 'user_id' => $userId])->first();
+            $transaction = Transaction::where(['id' => $id, 'user_id' => $userId])->first();
             $transaction->update([
                 'date_time' => $validated['date_time'],
                 'description' => $validated['description'],
