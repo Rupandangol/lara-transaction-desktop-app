@@ -66,12 +66,14 @@
                 </div>
                 <div>
                     <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
-                    <select name="year" id="year" class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
+                    <select name="year" id="year"
+                        class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
                         @for ($year = now()->year; $year >= 2000; $year--)
                             <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
                                 {{ $year }}
                             </option>
                         @endfor
+                        <option value="all"  {{ request('year') == 'all' ? 'selected' : '' }}>All</option>
                     </select>
                 </div>
                 <div>
