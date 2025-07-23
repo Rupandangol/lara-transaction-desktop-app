@@ -6,12 +6,12 @@ class LinearRegressionPredictionService
 {
     public function predict($data)
     {
-        //linear equation
-        //y=b0 + b1x;
-        //x=independent variable
-        //y=output
-        //b1=slope
-        //b0= intercept
+        // linear equation
+        // y=b0 + b1x;
+        // x=independent variable
+        // y=output
+        // b1=slope
+        // b0= intercept
         if ($data->isEmpty()) {
             return 0;
         }
@@ -41,6 +41,7 @@ class LinearRegressionPredictionService
         $b0 = $y_mean - $b1 * $x_mean;
         $next_x = $n + 1;
         $predicted_y = $b0 + ($b1 * $next_x);
+
         return $predicted_y;
     }
 }

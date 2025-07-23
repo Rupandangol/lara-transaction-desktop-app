@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithStartRow;
 
-class TransactionImport implements ToModel, WithStartRow, WithChunkReading, WithBatchInserts
+class TransactionImport implements ToModel, WithBatchInserts, WithChunkReading, WithStartRow
 {
     protected string $sourceType;
 
@@ -18,13 +18,13 @@ class TransactionImport implements ToModel, WithStartRow, WithChunkReading, With
     {
         $this->sourceType = $sourceType;
     }
+
     public function startrow(): int
     {
         return $this->sourceType === 'esewa' ? 10 : 1;
     }
+
     /**
-     * @param array $row
-     *
      * @return \Illuminate\Database\Eloquent\Model|null
      */
     public function model(array $row)
@@ -37,24 +37,27 @@ class TransactionImport implements ToModel, WithStartRow, WithChunkReading, With
                 'credit' => $row[4],
                 'status' => $row[5],
                 'channel' => $row[7],
-                'user_id' => Auth::user()->id
+                'user_id' => Auth::user()->id,
             ]);
         }
     }
+
     public function batchSize(): int
     {
         return 1000;
     }
+
     public function chunkSize(): int
     {
         return 1000;
     }
+
     public function getCsvSettings(): array
     {
         return [
             'delimiter' => ',',
             'enclosure' => '"',
-            'input_encoding' => 'UTF-8'
+            'input_encoding' => 'UTF-8',
         ];
     }
 }
