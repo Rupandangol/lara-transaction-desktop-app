@@ -24,9 +24,9 @@ class UserController extends Controller
                 ->title('Are you sure?')
                 ->buttons(['Yes', 'Cancel'])
                 ->show('This will change your password..');
-            if (!$confirmed) {
+            if (! $confirmed) {
                 $user->update([
-                    'password' => Hash::make($validated['new_password'])
+                    'password' => Hash::make($validated['new_password']),
                 ]);
                 Notification::title('Success')
                     ->message('Password Updated Successfully')
@@ -35,6 +35,7 @@ class UserController extends Controller
         } else {
             Alert::new()->type('error')->show('Incorrect Current password');
         }
+
         return redirect()->back();
     }
 }

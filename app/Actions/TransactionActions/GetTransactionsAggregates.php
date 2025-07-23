@@ -11,35 +11,36 @@ use Illuminate\Support\Facades\Cache;
 final class GetTransactionsAggregates
 {
     public const BASE_AMOUNT = 0;
+
     public const TEN_MIN_IN_SEC = 600;
 
     public function handle($query, $request, $nowYear)
     {
-        $cacheKey = 'user_' . Auth::id() . '_aggregates_' . md5(json_encode($request->only(['year', 'year_month', 'date', 'description'])));
+        $cacheKey = 'user_'.Auth::id().'_aggregates_'.md5(json_encode($request->only(['year', 'year_month', 'date', 'description'])));
         $aggregates = Cache::remember($cacheKey, self::TEN_MIN_IN_SEC, function () use ($query, $nowYear) {
             $total_transaction = (clone $query)->count();
             $total_spent = (clone $query)->sum('debit');
             $total_income = (clone $query)->sum('credit');
             $monthly_expenses =
                 (clone $query)
-                ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
-                ->groupBy('month')
-                ->having('year', $nowYear)
-                ->orderBy('month')
-                ->get();
+                    ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
+                    ->groupBy('month')
+                    ->having('year', $nowYear)
+                    ->orderBy('month')
+                    ->get();
 
             if ($monthly_expenses->count() > 2) {
-                $percentChangeForecast = (new PercentChangeForecast());
+                $percentChangeForecast = (new PercentChangeForecast);
                 $percent_change = $percentChangeForecast->changePercent($monthly_expenses->last() ?? self::BASE_AMOUNT, $monthly_expenses->reverse()->skip(1)->first() ?? self::BASE_AMOUNT);
                 $percent_changes = collect($percentChangeForecast->changesPercent($monthly_expenses));
             }
-            $top_expenses = (clone $query)->selectRaw("description , COUNT(*) as total,SUM(debit) as debit_sum")
+            $top_expenses = (clone $query)->selectRaw('description , COUNT(*) as total,SUM(debit) as debit_sum')
                 ->where('credit', self::BASE_AMOUNT)
                 ->groupBy('description')
                 ->orderByDesc('debit_sum')
                 ->limit(5)
                 ->get();
-            $linear_regression_forecast = (new LinearRegressionPredictionService())->predict($monthly_expenses);
+            $linear_regression_forecast = (new LinearRegressionPredictionService)->predict($monthly_expenses);
             $over_all_forecast = (clone $query)
                 ->selectRaw("strftime('%m', date_time) as month, strftime('%Y', date_time) as year, SUM(debit) as total_spent")
                 ->groupBy('year', 'month')
@@ -79,6 +80,7 @@ final class GetTransactionsAggregates
                 'tag_related_spendings' => $tag_related_spendings,
             ];
         });
+
         return $aggregates;
     }
 }

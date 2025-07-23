@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Actions\TransactionActions\GetTransactionsAggregates;
 use App\Imports\TransactionImport;
 use App\Models\Transaction;
-use App\Services\LinearRegressionPredictionService;
-use App\Services\PercentChangeForecast;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +17,7 @@ use Native\Laravel\Facades\Notification;
 class TransactionsController extends Controller
 {
     public const BASE_AMOUNT = 0;
+
     public const TEN_MIN_IN_SEC = 600;
 
     public function index(Request $request)
@@ -33,7 +32,7 @@ class TransactionsController extends Controller
             $query->whereDate('date_time', Carbon::parse($request->get('date'))->format('Y-m-d'));
         }
         if ($request->filled('description')) {
-            $query->where('description', 'like', '%' . $request->get('description') . '%');
+            $query->where('description', 'like', '%'.$request->get('description').'%');
         }
         if ($request->filled('year')) {
             if ($request->get('year') != 'all') {
@@ -49,50 +48,56 @@ class TransactionsController extends Controller
         $transactions = $query->orderByDesc('date_time')->simplePaginate(10)->appends($request->only(['year', 'year_month', 'date', 'description']));
         $data = [
             'transactions' => $transactions,
-            ...$aggregates
+            ...$aggregates,
         ];
+
         return view('user.transaction.index', $data);
     }
-
 
     public function import(Request $request)
     {
         $validated = $request->validate([
             'transaction_file' => 'required|mimetypes:text/plain,text/csv,application/vnd.ms-excel',
-            'source_type' => 'required|in:default,esewa'
+            'source_type' => 'required|in:default,esewa',
         ], [
-            'transaction_file.mimetypes' => 'The transaction file must be a valid CSV or Excel file.'
+            'transaction_file.mimetypes' => 'The transaction file must be a valid CSV or Excel file.',
         ]);
         try {
             $uploaded = Excel::import(new TransactionImport($validated['source_type']), $validated['transaction_file']);
             self::cacheFlush();
             if ($uploaded) {
                 Notification::title('Import completed')->message('Transaction import completed')->show();
+
                 return back()
                     ->with([
                         'status' => 'success',
-                        'message' => 'Uploaded Successful'
+                        'message' => 'Uploaded Successful',
                     ]);
             }
             Alert::new()
                 ->error('An error occurred', 'The pizza oven is broken');
+
             return back()
                 ->with([
                     'status' => 'error',
-                    'message' => 'Upload Failed'
+                    'message' => 'Upload Failed',
                 ]);
         } catch (\Exception $e) {
             Alert::new()->type('error')->title('Error')->show('Try changing source type, or follow as sample provided');
+
             return redirect()->back();
         }
     }
+
     public function sample()
     {
         try {
             $file = public_path('statement/Sample.csv');
+
             return response()->download($file, 'Sample.csv');
         } catch (\Exception $e) {
             Alert::new()->type('error')->title('Error')->show($e->getMessage());
+
             return redirect()->back();
         }
     }
@@ -105,7 +110,7 @@ class TransactionsController extends Controller
                 ->buttons(['Yes, delete', 'Cancel'])
                 ->show('This will permanently delete all your transactions. This action cannot be undone.');
 
-            if (!$confirmed) {
+            if (! $confirmed) {
                 $userId = Auth::id();
 
                 DB::transaction(function () use ($userId) {
@@ -123,10 +128,12 @@ class TransactionsController extends Controller
 
         return redirect()->back();
     }
+
     public function create()
     {
         return view('user.transaction.create');
     }
+
     public static function cacheFlush()
     {
         Cache::flush();
@@ -141,7 +148,7 @@ class TransactionsController extends Controller
             'amount' => 'required',
             'status' => 'required',
             'channel' => 'required',
-            'tag' => 'sometimes'
+            'tag' => 'sometimes',
         ]);
         try {
             $userId = Auth::user()->id;
@@ -153,16 +160,18 @@ class TransactionsController extends Controller
                 'status' => $validated['status'],
                 'channel' => $validated['channel'],
                 'tag' => $validated['tag'],
-                'user_id' => $userId
+                'user_id' => $userId,
             ]);
             Notification::title('Success')->message('Transaction added successfully')->show();
+
             return redirect(route('transaction.index'));
         } catch (\Exception $e) {
             Alert::new()
                 ->type('error')
-                ->title('Error:' . $e->getCode())
+                ->title('Error:'.$e->getCode())
                 ->show($e->getMessage());
         }
+
         return redirect()->back();
     }
 
@@ -175,7 +184,7 @@ class TransactionsController extends Controller
                 ->title('Are you sure?')
                 ->buttons(['Yes, delete', 'Cancel'])
                 ->show('This will permanently delete all your transactions. This action cannot be undone.');
-            if (!$confirmed) {
+            if (! $confirmed) {
                 $transaction->delete();
                 Alert::new()
                     ->title('Success')
@@ -186,8 +195,10 @@ class TransactionsController extends Controller
                 ->title('Not Found')
                 ->show('Transaction is not found.');
         }
+
         return redirect()->back();
     }
+
     public function edit($id)
     {
         $userId = Auth::user()->id;
@@ -201,12 +212,14 @@ class TransactionsController extends Controller
             'status' => $transaction->status,
             'channel' => $transaction->channel,
             'tag' => $transaction->tag,
-            'id' => $transaction->id
+            'id' => $transaction->id,
         ];
+
         return view('user.transaction.edit', [
-            'transaction' => $data
+            'transaction' => $data,
         ]);
     }
+
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -216,7 +229,7 @@ class TransactionsController extends Controller
             'amount' => 'required',
             'status' => 'required',
             'channel' => 'required',
-            'tag' => 'sometimes'
+            'tag' => 'sometimes',
         ]);
         try {
             $userId = Auth::user()->id;
@@ -229,22 +242,24 @@ class TransactionsController extends Controller
                 'status' => $validated['status'],
                 'channel' => $validated['channel'],
                 'tag' => $validated['tag'],
-                'user_id' => $userId
+                'user_id' => $userId,
             ]);
             Notification::title('Success')->message('Transaction updated successfully')->show();
+
             return redirect(route('transaction.index'));
         } catch (\Exception $e) {
             Alert::new()
                 ->type('error')
-                ->title('Error:' . $e->getCode())
+                ->title('Error:'.$e->getCode())
                 ->show($e->getMessage());
         }
+
         return redirect()->back();
     }
 
     public function export()
     {
-        $filename = 'transaction_' . Carbon::now()->format('Ymdhsi') . '.csv';
+        $filename = 'transaction_'.Carbon::now()->format('Ymdhsi').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",
@@ -252,6 +267,7 @@ class TransactionsController extends Controller
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0',
         ];
+
         return response()->stream(function () {
             $handle = fopen('php://output', 'w');
             fputcsv($handle, [
@@ -266,6 +282,7 @@ class TransactionsController extends Controller
             ]);
             DB::table('transactions')
                 ->select('id', 'date_time', 'description', 'debit', 'credit', 'tag', 'status', 'channel')
+                ->where('user_id', Auth::user()->id)
                 ->orderByDesc('date_time')
                 ->chunk(1000, function ($items) use ($handle) {
                     foreach ($items as $item) {
