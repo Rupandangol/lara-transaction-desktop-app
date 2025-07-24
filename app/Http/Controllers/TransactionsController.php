@@ -43,9 +43,16 @@ class TransactionsController extends Controller
             $nowYear = Carbon::now()->format('Y');
             $query->whereYear('date_time', $nowYear);
         }
+        if ($request->filled('sort_by') && $request->filled('sort_order')) {
+            $sort_by = $request->get('sort_by');
+            $sort_order = $request->get('sort_order');
+        }
         $aggregates = app(GetTransactionsAggregates::class)->handle($query, $request, $nowYear);
 
-        $transactions = $query->orderByDesc('date_time')->simplePaginate(10)->appends($request->only(['year', 'year_month', 'date', 'description']));
+        $transactions = $query
+            ->orderBy($sort_by ?? 'date_time', $sort_order ?? 'desc')
+            ->simplePaginate(10)
+            ->appends($request->only(['year', 'year_month', 'date', 'description']));
         $data = [
             'transactions' => $transactions,
             ...$aggregates,
