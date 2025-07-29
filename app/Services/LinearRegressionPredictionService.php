@@ -42,6 +42,6 @@ class LinearRegressionPredictionService
         $next_x = $n + 1;
         $predicted_y = $b0 + ($b1 * $next_x);
 
-        return $predicted_y;
+        return abs($predicted_y);
     }
 }

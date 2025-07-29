@@ -37,6 +37,7 @@ class TransactionImport implements ToModel, WithBatchInserts, WithChunkReading, 
                 'credit' => $row[4],
                 'status' => $row[5],
                 'channel' => $row[7],
+                'tag' => lcfirst($row[8]) ?? 'others',
                 'user_id' => Auth::user()->id,
             ]);
         }

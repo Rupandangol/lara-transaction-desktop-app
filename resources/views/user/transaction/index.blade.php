@@ -269,7 +269,7 @@
         </div>
 
         @if ($total_transaction != 0)
-            <div class="bg-white px-40 py-6 rounded-2xl shadow-md w-full items-center text-center mb-4">
+            <div class="bg-white px-35 py-6 rounded-2xl shadow-md w-full items-center text-center mb-4">
                 <h1 class="text-2xl font-semibold text-gray-800 mb-4">
                     📈 <span>Monthly Expenses</span>
                 </h1>
@@ -278,7 +278,7 @@
                 </div>
             </div>
 
-            <div class="bg-white px-40 py-6 rounded-2xl shadow-md w-full  items-center text-center mb-4">
+            <div class="bg-white px-35 py-6 rounded-2xl shadow-md w-full  items-center text-center mb-4">
                 <h1 class="text-2xl font-semibold text-gray-800 mb-4">
                     🕒 <span>Hourly Spendings</span>
                 </h1>
@@ -287,7 +287,7 @@
                 </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-                <div class="bg-white px-40 py-6 rounded-2xl shadow-md w-full  items-center text-center mb-4">
+                <div class="bg-white px-35 py-6 rounded-2xl shadow-md w-full  items-center text-center mb-4">
                     <h1 class="text-2xl font-semibold text-gray-800 mb-4">
                         💸 <span>Top Expenses</span>
                     </h1>
@@ -296,7 +296,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-md w-full  items-center text-center mb-4">
+                <div class="bg-white px-6 py-10 rounded-2xl shadow-md w-full  items-center text-center mb-4">
                     <h1 class="text-2xl font-semibold text-gray-800 mb-4">
                         🏷️ <span>Tag-based Spendings</span>
                     </h1>
@@ -306,7 +306,7 @@
                 </div>
             </div>
             @if ($percent_changes->isNotEmpty())
-                <div class="bg-white px-40 py-6 rounded-2xl shadow-md w-full  items-center text-center mb-4">
+                <div class="bg-white px-35 py-6 rounded-2xl shadow-md w-full  items-center text-center mb-4">
                     <h1 class=" font-semibold text-2xl text-gray-800 mb-4">
                         % <span>Percent changes</span>
                     </h1>
@@ -353,7 +353,17 @@
                 options: {
                     responsive: true,
                     scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Hours-24'
+                            },
+                        },
                         y: {
+                            title: {
+                                display: true,
+                                text: 'Spendings'
+                            },
                             beginAtZero: true,
                             ticks: {
                                 stepSize: 5
@@ -387,14 +397,6 @@
                 },
                 options: {
                     responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 5
-                            }
-                        }
-                    }
                 }
             });
         }
@@ -420,7 +422,17 @@
                 options: {
                     responsive: true,
                     scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Months'
+                            },
+                        },
                         y: {
+                            title: {
+                                display: true,
+                                text: 'Expenses'
+                            },
                             beginAtZero: true,
                             ticks: {
                                 stepSize: 5,
@@ -499,7 +511,17 @@
                 options: {
                     responsive: true,
                     scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Tags'
+                            },
+                        },
                         y: {
+                            title: {
+                                display: true,
+                                text: 'Spendings'
+                            },
                             beginAtZero: true,
                             ticks: {
                                 stepSize: 5
@@ -538,6 +560,24 @@
                             borderWidth: 2,
                         }
                     },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Percent Change (%)'
+                            },
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Months'
+                            },
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 5
+                            }
+                        }
+                    }
                 }
             });
         }

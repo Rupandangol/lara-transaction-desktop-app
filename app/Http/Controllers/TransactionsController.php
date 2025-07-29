@@ -51,7 +51,7 @@ class TransactionsController extends Controller
 
         $transactions = $query
             ->orderBy($sort_by ?? 'date_time', $sort_order ?? 'desc')
-            ->simplePaginate(10)
+            ->paginate(15)
             ->appends($request->only(['year', 'year_month', 'date', 'description']));
         $data = [
             'transactions' => $transactions,
@@ -84,7 +84,7 @@ class TransactionsController extends Controller
             Alert::new()
                 ->error('An error occurred', 'The pizza oven is broken');
 
-            return back()
+            return redirect()->back()
                 ->with([
                     'status' => 'error',
                     'message' => 'Upload Failed',
@@ -283,9 +283,10 @@ class TransactionsController extends Controller
                 'Description',
                 'Debit(Rs.)',
                 'Credit(Rs.)',
-                'Tag',
                 'Status',
+                'Balance(Optional)',
                 'Channel',
+                'Tag',
             ]);
             DB::table('transactions')
                 ->select('id', 'date_time', 'description', 'debit', 'credit', 'tag', 'status', 'channel')
@@ -299,9 +300,10 @@ class TransactionsController extends Controller
                             $item->description,
                             $item->debit,
                             $item->credit,
-                            ucfirst($item->tag),
                             $item->status,
+                            '',
                             $item->channel,
+                            ucfirst($item->tag),
                         ]);
                     }
                 });
