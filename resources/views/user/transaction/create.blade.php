@@ -14,7 +14,8 @@
                 {{-- Date Time --}}
                 <div class="mb-4">
                     <label for="date_time" class="block text-sm font-medium text-gray-700">Date Time</label>
-                    <input value="{{ old('date_time') ?? '' }}" type="datetime-local" max="{{now()}}" name="date_time" id="date_time"
+                    <input value="{{ old('date_time') ?? '' }}" type="datetime-local" max="{{ now() }}"
+                        name="date_time" id="date_time"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-green-200 focus:border-green-500 p-2">
                     @if ($errors->has('date_time'))
                         <code class="text-red-600">{{ $errors->first('date_time') }}</code>
@@ -55,9 +56,10 @@
                     <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                     <select name="status" id="status"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-green-200 focus:border-green-500 p-2">
-                        <option @if (old('status') == 'COMPLETE') selected @endif value="COMPLETE">Complete</option>
-                        <option @if (old('status') == 'PENDING') selected @endif value="PENDING">Pending</option>
-                        <option @if (old('status') == 'INCOMPLETE') selected @endif value="INCOMPLETE">Incomplete</option>
+                        @foreach ($status_list as $item)
+                            <option @if (old('status') == $item->value) selected @endif value={{ $item->value }}>
+                                {{ $item->name }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -66,14 +68,11 @@
                     <label for="channel" class="block text-sm font-medium text-gray-700">Channel</label>
                     <select name="channel" id="channel"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-green-200 focus:border-green-500 p-2">
-                        <option @if (old('channel') == 'App') selected @endif value="App">App</option>
-                        <option @if (old('channel') == 'THIRDPARTY') selected @endif value="THIRDPARTY">Third Party</option>
-                        <option @if (old('channel') == 'FONEPAY') selected @endif value="FONEPAY">FonePay</option>
-                        <option @if (old('channel') == 'STRIPE') selected @endif value="STRIPE">Stripe</option>
-                        <option @if (old('channel') == 'PAYPAL') selected @endif value="PAYPAL">PayPal</option>
-                        <option @if (old('channel') == 'WECHAT') selected @endif value="WECHAT">WeChat</option>
-                        <option @if (old('channel') == 'CASH') selected @endif value="CASH">Cash</option>
-                        <option @if (old('channel') == 'OTHERS') selected @endif value="OTHERS">Others</option>
+                        @foreach ($channel_list as $item)
+                            <option @if (old('channel') == $item->value) selected @endif value="{{ $item->value }}">
+                                {{ $item->name }}</option>
+                        @endforeach
+
                     </select>
                 </div>
 
@@ -82,17 +81,11 @@
                     <label for="tag" class="block text-sm font-medium text-gray-700">Tag</label>
                     <select name="tag" id="tag"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-green-200 focus:border-green-500 p-2">
-                        <option @if (old('tag') == 'bill_sharing') selected @endif value="bill_sharing">Bill Sharing
-                        </option>
-                        <option @if (old('tag') == 'family_expenses') selected @endif value="family_expenses">Family Expenses
-                        </option>
-                        <option @if (old('tag') == 'groceries') selected @endif value="groceries">Groceries</option>
-                        <option @if (old('tag') == 'lend') selected @endif value="lend">Lend/Borrow</option>
-                        <option @if (old('tag') == 'personal_use') selected @endif value="personal_use">Personal Use
-                        </option>
-                        <option @if (old('tag') == 'ride_sharing') selected @endif value="ride_sharing">Ride Sharing
-                        </option>
-                        <option @if (old('tag') == 'others') selected @endif value="others">Others</option>
+                        @foreach ($tag_list as $item)
+                            <option @if (old('tag') == $item->value) selected @endif value="{{$item->value}}">
+                                {{str_replace('_',' ',$item->name)}}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 

@@ -31,13 +31,13 @@ class TransactionImport implements ToModel, WithBatchInserts, WithChunkReading, 
     {
         if (isset($row[0]) && isset($row[1]) && strtotime($row[1])) {
             return new Transaction([
-                'date_time' => Carbon::parse($row[1])->format('Y-m-d H:i:s'),
-                'description' => $row[2],
-                'debit' => $row[3],
-                'credit' => $row[4],
-                'status' => $row[5],
-                'channel' => $row[7],
-                'tag' => lcfirst($row[8]) ?? 'others',
+                'date_time' => isset($row[1]) ? Carbon::parse($row[1])->format('Y-m-d H:i:s') : '',
+                'description' => isset($row[2]) ? $row[2] : '',
+                'debit' => isset($row[3]) ? $row[3] : '',
+                'credit' => isset($row[4]) ? $row[4] : '',
+                'status' => isset($row[5]) ? $row[5] : '',
+                'channel' => isset($row[7]) ? $row[7] : '',
+                'tag' => isset($row[8]) ? lcfirst($row[8]) : 'others',
                 'user_id' => Auth::user()->id,
             ]);
         }

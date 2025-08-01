@@ -16,7 +16,7 @@
                 <div class="mb-4">
                     <label for="date_time" class="block text-sm font-medium text-gray-700">Date Time</label>
                     <input value="{{ $transaction['date_time'] ?? (old('date_time') ?? '') }}" type="datetime-local"
-                        name="date_time" id="date_time" max="{{now()}}"
+                        name="date_time" id="date_time" max="{{ now() }}"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-green-200 focus:border-green-500 p-2">
                     @if ($errors->has('date_time'))
                         <code class="text-red-600">{{ $errors->first('date_time') }}</code>
@@ -59,9 +59,10 @@
                     <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                     <select name="status" id="status"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-green-200 focus:border-green-500 p-2">
-                        <option @if ($transaction['status'] == 'COMPLETE') selected @endif value="COMPLETE">Complete</option>
-                        <option @if ($transaction['status'] == 'PENDING') selected @endif value="PENDING">Pending</option>
-                        <option @if ($transaction['status'] == 'INCOMPLETE') selected @endif value="INCOMPLETE">Incomplete</option>
+                        @foreach ($status_list as $item)
+                            <option @if ($transaction['status'] == $item->value) selected @endif value="{{ $item->value }}">
+                                {{ $item->name }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -70,15 +71,14 @@
                     <label for="channel" class="block text-sm font-medium text-gray-700">Channel</label>
                     <select name="channel" id="channel"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-green-200 focus:border-green-500 p-2">
-                        <option @if ($transaction['channel'] == 'App') selected @endif value="App">App</option>
-                        <option @if ($transaction['channel'] == 'THIRDPARTY') selected @endif value="THIRDPARTY">Third Party</option>
-                        <option @if ($transaction['channel'] == 'FONEPAY') selected @endif value="FONEPAY">FonePay</option>
-                        <option @if ($transaction['channel'] == 'STRIPE') selected @endif value="STRIPE">Stripe</option>
-                        <option @if ($transaction['channel'] == 'PAYPAL') selected @endif value="PAYPAL">PayPal</option>
-                        <option @if ($transaction['channel'] == 'WECHAT') selected @endif value="WECHAT">WeChat</option>
-                        <option @if ($transaction['channel'] == 'CASH') selected @endif value="CASH">Cash</option>
-                        <option @if ($transaction['channel'] == 'OTHERS') selected @endif value="OTHERS">Others</option>
+                        @foreach ($channel_list as $item)
+                            <option @if ($transaction['channel'] == $item->value) selected @endif value="{{ $item->value }}">
+                                {{ $item->name }}</option>
+                        @endforeach
                     </select>
+                    @if ($errors->has('channel'))
+                        <code class="text-red-600">{{ $errors->first('channel') }}</code>
+                    @endif
                 </div>
 
                 {{-- Tag --}}
@@ -86,17 +86,11 @@
                     <label for="tag" class="block text-sm font-medium text-gray-700">Tag</label>
                     <select name="tag" id="tag"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-green-200 focus:border-green-500 p-2">
-                        <option @if ($transaction['tag'] == 'bill_sharing') selected @endif value="bill_sharing">Bill Sharing
-                        </option>
-                        <option @if ($transaction['tag'] == 'family_expenses') selected @endif value="family_expenses">Family Expenses
-                        </option>
-                        <option @if ($transaction['tag'] == 'groceries') selected @endif value="groceries">Groceries</option>
-                        <option @if ($transaction['tag'] == 'lend') selected @endif value="lend">Lend/Borrow</option>
-                        <option @if ($transaction['tag'] == 'personal_use') selected @endif value="personal_use">Personal Use
-                        </option>
-                        <option @if ($transaction['tag'] == 'ride_sharing') selected @endif value="ride_sharing">Ride Sharing
-                        </option>
-                        <option @if ($transaction['tag'] == 'others') selected @endif value="others">Others</option>
+                        @foreach ($tag_list as $key => $item)
+                            <option @if ($transaction['tag'] == $item->value) selected @endif value={{ $item->value }}>
+                                {{ str_replace('_', ' ', $item->name) }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
