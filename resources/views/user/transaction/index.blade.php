@@ -233,7 +233,7 @@
                                 <td class="border px-4 py-2">{{ $item->description }}</td>
                                 <td class="border px-4 py-2">{{ $item->debit }}</td>
                                 <td class="border px-4 py-2">{{ $item->credit }}</td>
-                                <td class="border px-4 py-2">{{ $item->tag ?? '-' }}</td>
+                                <td class="border px-4 py-2">{{ ucwords(str_replace('_', ' ', $item->tag)) ?? '-' }}</td>
                                 <td class="border px-4 py-2">{{ $item->status }}</td>
                                 <td class="border px-4 py-2">{{ $item->channel }}</td>
                                 <td class="border px-4 py-2 text-center">

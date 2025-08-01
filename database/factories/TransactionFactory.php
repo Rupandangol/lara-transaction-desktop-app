@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enum\ChannelEnum;
+use App\Enum\StatusEnum;
+use App\Enum\TagEnum;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -24,9 +27,9 @@ class TransactionFactory extends Factory
             'description' => fake()->sentence(),
             'debit' => fake()->randomElement([100, 1000]),
             'credit' => fake()->randomElement([100, 1000]),
-            'tag' => fake()->randomElement(['food', 'gym', 'others', 'bills', 'share']),
-            'status' => fake()->randomElement(['pending', 'completed']),
-            'channel' => fake()->randomElement(['esewa']),
+            'tag' => fake()->randomElement(TagEnum::cases()),
+            'status' => fake()->randomElement(StatusEnum::cases()),
+            'channel' => fake()->randomElement(ChannelEnum::cases()),
             'user_id' => $userIds->isNotEmpty() ? fake()->randomElement($userIds->toArray()) : null,
         ];
     }

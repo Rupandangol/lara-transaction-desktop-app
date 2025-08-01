@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Actions\TransactionActions\GetTransactionsAggregates;
+use App\Enum\ChannelEnum;
+use App\Enum\StatusEnum;
+use App\Enum\TagEnum;
 use App\Imports\TransactionImport;
 use App\Models\Transaction;
 use Carbon\Carbon;
@@ -10,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use Native\Laravel\Facades\Alert;
 use Native\Laravel\Facades\Notification;
@@ -90,7 +94,8 @@ class TransactionsController extends Controller
                     'message' => 'Upload Failed',
                 ]);
         } catch (\Exception $e) {
-            Alert::new()->type('error')->title('Error')->show('Try changing source type, or follow as sample provided');
+            Alert::new()->type('error')->title('Error')->show($e->getMessage());
+            // Alert::new()->type('error')->title('Error')->show('Try changing source type, or follow as sample provided');
 
             return redirect()->back();
         }
@@ -138,7 +143,12 @@ class TransactionsController extends Controller
 
     public function create()
     {
-        return view('user.transaction.create');
+
+        return view('user.transaction.create', [
+            'channel_list' => ChannelEnum::cases(),
+            'status_list' => StatusEnum::cases(),
+            'tag_list' => TagEnum::cases(),
+        ]);
     }
 
     public static function cacheFlush()
@@ -153,8 +163,8 @@ class TransactionsController extends Controller
             'description' => 'required|max:255',
             'transaction_type' => 'required',
             'amount' => 'required',
-            'status' => 'required',
-            'channel' => 'required',
+            'status' => ['required', Rule::enum(StatusEnum::class)],
+            'channel' => ['required', Rule::enum(ChannelEnum::class)],
             'tag' => 'sometimes',
         ]);
         try {
@@ -224,6 +234,9 @@ class TransactionsController extends Controller
 
         return view('user.transaction.edit', [
             'transaction' => $data,
+            'channel_list' => ChannelEnum::cases(),
+            'status_list' => StatusEnum::cases(),
+            'tag_list' => TagEnum::cases(),
         ]);
     }
 
@@ -234,8 +247,8 @@ class TransactionsController extends Controller
             'description' => 'required|max:255',
             'transaction_type' => 'required',
             'amount' => 'required',
-            'status' => 'required',
-            'channel' => 'required',
+            'status' => ['required', Rule::enum(StatusEnum::class)],
+            'channel' => ['required', Rule::enum(ChannelEnum::class)],
             'tag' => 'sometimes',
         ]);
         try {
