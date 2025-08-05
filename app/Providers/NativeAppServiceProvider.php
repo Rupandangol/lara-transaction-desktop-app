@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Native\Laravel\Contracts\ProvidesPhpIni;
+use Native\Laravel\Facades\Menu;
+use Native\Laravel\Facades\MenuBar;
 use Native\Laravel\Facades\Window;
 
 class NativeAppServiceProvider implements ProvidesPhpIni
@@ -18,6 +20,15 @@ class NativeAppServiceProvider implements ProvidesPhpIni
             ->height(1050)
             ->minWidth(1050)
             ->minHeight(1050);
+        Menu::create(
+            Menu::file(),
+            Menu::edit(),
+            Menu::view(),
+            Menu::window(),
+            Menu::make(
+                Menu::link(route('transaction.index'), 'Transaction List'),
+            )->label('Transaction')
+        );
     }
 
     /**
