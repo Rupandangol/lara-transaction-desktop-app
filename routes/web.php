@@ -12,7 +12,7 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/', [TransactionsController::class, 'index'])->name('transaction.index');
         Route::post('/import', [TransactionsController::class, 'import'])->name('transaction.import');
         Route::get('/sample', [TransactionsController::class, 'sample'])->name('transaction.sample');
-        Route::get('/purge', [TransactionsController::class, 'purge'])->name('transaction.purge');
+        Route::delete('/purge', [TransactionsController::class, 'purge'])->name('transaction.purge');
         Route::get('/create', [TransactionsController::class, 'create'])->name('transaction.create');
         Route::get('/export', [TransactionsController::class, 'export'])->name('transaction.export');
         Route::post('/store', [TransactionsController::class, 'store'])->name('transaction.store');

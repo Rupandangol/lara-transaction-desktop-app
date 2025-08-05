@@ -80,10 +80,13 @@
                 This will permanently delete <strong>all your transaction history</strong>. This action cannot be undone.
                 Please proceed with caution.
             </p>
-            <a href="{{ route('transaction.purge') }}"
-                class="block w-full text-center bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md shadow-md transition duration-200">
-                Delete All Transactions
-            </a>
+            <form method="post" action="{{ route('transaction.purge') }}">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                    class="block w-full text-center bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md shadow-md transition duration-200">Delete
+                    All Transactions</button>
+            </form>
         </div>
     </div>
 @endsection
