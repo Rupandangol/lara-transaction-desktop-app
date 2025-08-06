@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\TransactionActions\GetTransactionsAggregates;
+use App\Actions\TransactionActions\PurgeUserTransactions;
 use App\Enum\ChannelEnum;
 use App\Enum\StatusEnum;
 use App\Enum\TagEnum;
@@ -114,7 +115,7 @@ class TransactionsController extends Controller
         }
     }
 
-    public function purge()
+    public function purge(PurgeUserTransactions $purge_user_transactions)
     {
         try {
             $confirmed = Alert::new()
@@ -124,12 +125,7 @@ class TransactionsController extends Controller
 
             if (! $confirmed) {
                 $userId = Auth::id();
-
-                DB::transaction(function () use ($userId) {
-                    Transaction::where('user_id', $userId)->delete();
-                    self::cacheFlush();
-                });
-
+                $purge_user_transactions->handle($userId);
                 Alert::new()
                     ->title('Transactions Deleted')
                     ->show('All your transactions have been successfully purged.');
