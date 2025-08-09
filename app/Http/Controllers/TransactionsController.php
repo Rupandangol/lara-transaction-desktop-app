@@ -96,7 +96,6 @@ class TransactionsController extends Controller
                 ]);
         } catch (\Exception $e) {
             Alert::new()->type('error')->title('Error')->show($e->getMessage());
-            // Alert::new()->type('error')->title('Error')->show('Try changing source type, or follow as sample provided');
 
             return redirect()->back();
         }
@@ -155,7 +154,7 @@ class TransactionsController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'date_time' => 'required',
+            'date_time' => 'required|date',
             'description' => 'required|max:255',
             'transaction_type' => 'required',
             'amount' => 'required',
@@ -167,7 +166,7 @@ class TransactionsController extends Controller
             $userId = Auth::user()->id;
 
             $transaction = Transaction::create([
-                'date_time' => $validated['date_time'],
+                'date_time' => Carbon::parse($validated['date_time'])->format('Y-m-d H:i:s'),
                 'description' => $validated['description'],
                 $validated['transaction_type'] => $validated['amount'],
                 'status' => $validated['status'],
@@ -239,7 +238,7 @@ class TransactionsController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'date_time' => 'required',
+            'date_time' => 'required|date',
             'description' => 'required|max:255',
             'transaction_type' => 'required',
             'amount' => 'required',
@@ -251,7 +250,7 @@ class TransactionsController extends Controller
             $userId = Auth::user()->id;
             $transaction = Transaction::where(['id' => $id, 'user_id' => $userId])->first();
             $transaction->update([
-                'date_time' => $validated['date_time'],
+                'date_time' => Carbon::parse($validated['date_time'])->format('Y-m-d H:i:s'),
                 'description' => $validated['description'],
                 $validated['transaction_type'] => $validated['amount'],
                 $validated['transaction_type'] == 'credit' ? 'debit' : 'credit' => self::BASE_AMOUNT,
