@@ -72,7 +72,7 @@ class TransactionControllerTest extends TestCase
         ]);
         $this->assertDatabaseCount('transactions', 1);
         $this->assertDatabaseHas('transactions', [
-            'date_time' => '2020-01-01',
+            'date_time' => '2020-01-01 00:00:00',
             'description' => 'test',
             'debit' => '123',
             'status' => 'COMPLETE',
