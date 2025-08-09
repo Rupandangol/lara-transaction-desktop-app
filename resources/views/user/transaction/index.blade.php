@@ -269,15 +269,16 @@
         </div>
 
         @if ($total_transaction != 0)
-            <div class="bg-white px-35 py-6 rounded-2xl shadow-md w-full items-center text-center mb-4">
-                <h1 class="text-2xl font-semibold text-gray-800 mb-4">
-                    📈 <span>Monthly Expenses</span>
-                </h1>
-                <div class="">
-                    <canvas id="lineChart" class=""></canvas>
+            @if ($monthly_expenses->isNotEmpty())
+                <div class="bg-white px-35 py-6 rounded-2xl shadow-md w-full items-center text-center mb-4">
+                    <h1 class="text-2xl font-semibold text-gray-800 mb-4">
+                        📈 <span>Monthly Expenses</span>
+                    </h1>
+                    <div class="">
+                        <canvas id="lineChart" class=""></canvas>
+                    </div>
                 </div>
-            </div>
-
+            @endif
             <div class="bg-white px-35 py-6 rounded-2xl shadow-md w-full  items-center text-center mb-4">
                 <h1 class="text-2xl font-semibold text-gray-800 mb-4">
                     🕒 <span>Hourly Spendings</span>
