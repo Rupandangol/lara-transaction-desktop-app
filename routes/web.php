@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TransactionsController;
 use App\Http\Controllers\UserController;
@@ -19,6 +20,8 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/{id}/edit', [TransactionsController::class, 'edit'])->name('transaction.edit');
         Route::patch('/{id}/update', [TransactionsController::class, 'update'])->name('transaction.update');
         Route::delete('/{id}', [TransactionsController::class, 'destroy'])->name('transaction.delete');
+        Route::get('/admins', [AdminController::class, 'index'])->name('admins.index');
+        Route::delete('/admins/{id}', [AdminController::class, 'destroy'])->name('admins.destroy');
     });
     Route::patch('/user', [UserController::class, 'update'])->name('user.update');
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
