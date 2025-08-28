@@ -4,6 +4,9 @@ namespace App\Services;
 
 class LinearRegressionPredictionService
 {
+    const NUMERATOR = 0;
+    const DENOMINATOR = 0;
+    
     public function predict($data)
     {
         // linear equation
@@ -25,8 +28,8 @@ class LinearRegressionPredictionService
         $x_mean = array_sum($x) / $n;
         $y_mean = array_sum($y) / $n;
 
-        $numerator = 0;
-        $denominator = 0;
+        $numerator = self::NUMERATOR;
+        $denominator = self::DENOMINATOR;
 
         for ($i = 0; $i < $n; $i++) {
             $numerator += ($x[$i] - $x_mean) * ($y[$i] - $y_mean);
