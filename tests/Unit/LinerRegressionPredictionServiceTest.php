@@ -12,7 +12,7 @@ class LinerRegressionPredictionServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new LinearRegressionPredictionService();
+        $this->service = new LinearRegressionPredictionService;
     }
 
     public function test_returns_zero_when_data_set_is_empty()
@@ -47,6 +47,7 @@ class LinerRegressionPredictionServiceTest extends TestCase
 
         $this->assertEquals(11, round($result));
     }
+
     public function test_returns_zero_when_only_one_data_point()
     {
         $data = collect([

@@ -23,6 +23,7 @@
                         'description' => request('description'),
                         'year' => request('year'),
                         'year_month' => request('year_month'),
+                        'hour' => request('hour'),
                     ])->filter();
                 @endphp
 
@@ -369,6 +370,18 @@
                             ticks: {
                                 stepSize: 5
                             }
+                        }
+                    },
+                    onClick: function(evt, elements) {
+                        console.log(elements);
+                        if (elements.length > 0) {
+                            const idx = elements[0].index;
+                            const selectedHour = labels[idx];
+                            console.log('Selected hour:', selectedHour);
+                            // Redirect with hour filter
+                            const url = new URL(window.location.href);
+                            url.searchParams.set('hour', selectedHour);
+                            window.location.href = url.toString();
                         }
                     }
                 }

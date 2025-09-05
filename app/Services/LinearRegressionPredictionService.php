@@ -5,8 +5,9 @@ namespace App\Services;
 class LinearRegressionPredictionService
 {
     const NUMERATOR = 0;
+
     const DENOMINATOR = 0;
-    
+
     public function predict($data)
     {
         // linear equation
