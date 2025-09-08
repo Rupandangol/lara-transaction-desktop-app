@@ -10,6 +10,7 @@ enum ChannelEnum: string
     case STRIPE = 'STRIPE';
     case PAYPAL = 'PAYPAL';
     case WECHAT = 'WECHAT';
-    case App = 'App';
+    case ESEWA = 'ESEWA';
+    case KHALTI = 'KHALTI';
     case OTHERS = 'OTHERS';
 }

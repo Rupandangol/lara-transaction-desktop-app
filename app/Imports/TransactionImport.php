@@ -36,7 +36,7 @@ class TransactionImport implements ToModel, WithBatchInserts, WithChunkReading, 
                 'debit' => isset($row[3]) ? $row[3] : '',
                 'credit' => isset($row[4]) ? $row[4] : '',
                 'status' => isset($row[5]) ? $row[5] : '',
-                'channel' => isset($row[7]) ? $row[7] : '',
+                'channel' => (isset($row[7]) && strtolower($row[7]) === 'app') ? 'ESEWA' : (isset($row[7]) ? $row[7] : ''),
                 'tag' => isset($row[8]) ? lcfirst($row[8]) : 'others',
                 'user_id' => Auth::user()->id,
             ]);
