@@ -377,8 +377,6 @@
                         if (elements.length > 0) {
                             const idx = elements[0].index;
                             const selectedHour = labels[idx];
-                            console.log('Selected hour:', selectedHour);
-                            // Redirect with hour filter
                             const url = new URL(window.location.href);
                             url.searchParams.set('hour', selectedHour);
                             window.location.href = url.toString();
@@ -411,6 +409,18 @@
                 },
                 options: {
                     responsive: true,
+                    onClick: function(evt, elements) {
+                        console.log(elements);
+                        if (elements.length > 0) {
+                            const idx = elements[0].index;
+                            const selectedExpenses = doughnutLabel[idx];
+                            const url = new URL(window.location.href);
+                            url.searchParams.set('description', selectedExpenses);
+                            url.searchParams.set('sort_order', 'desc');
+                            url.searchParams.set('sort_by', 'debit');
+                            window.location.href = url.toString();
+                        }
+                    }
                 }
             });
         }
