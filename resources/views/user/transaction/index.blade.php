@@ -14,261 +14,13 @@
     @endif
 
     <div>
-        <details class="bg-white rounded-md shadow-md mb-5" {{ $errors->any() ? 'open' : '' }}>
-            <summary
-                class="cursor-pointer px-5 py-4 p-4 font-semibold text-lg text-gray-800 bg-white hover:bg-gray-300 rounded-md">
-                📁 Transaction Upload & Filters
-                @php
-                    $filters = collect([
-                        'description' => request('description'),
-                        'year' => request('year'),
-                        'year_month' => request('year_month'),
-                        'hour' => request('hour'),
-                    ])->filter();
-                @endphp
+        @include('user.transaction.partials.uploadAndFilterblock')
 
-                @if ($filters->isNotEmpty())
-                    <span class="text-sm text-gray-600 ml-2">
-                        —
-                        @foreach ($filters as $label => $value)
-                            <span class="mr-2">{{ $label }}: {{ $value }}|</span>
-                        @endforeach
-                    </span>
-                    <a href="{{ route('transaction.index') }}"
-                        class="ml-2 bg-gray-300 text-black px-2 py-1 rounded text-xs hover:bg-gray-400">Clear</a>
-                @endif
-            </summary>
+        {{-- Main Content --}}
 
-            <div class="p-5 border-t border-gray-200">
-                <div class="bg-white p-5 shadow-md rounded-md mb-5">
-                    <div class="flex justify-between">
-                        <form id="importForm" method="POST" action="{{ route('transaction.import') }}"
-                            enctype="multipart/form-data" class="mb-6 ">
-                            @csrf
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700" for="transaction_file">Excel
-                                    Upload</label>
-                                <input class="mt-1 block  border border-gray-300 rounded px-3 py-2 mb-2" type="file"
-                                    name="transaction_file">
-                                @if ($errors->has('transaction_file'))
-                                    <code class="text-red-800">{{ $errors->first('transaction_file') }}</code>
-                                @endif
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700" for="source_type">Source_type</label>
-                                <select class="mt-1 block  border border-gray-300 rounded px-3 py-2 mb-2" name="source_type"
-                                    id="source_type">
-                                    <option value="default">Default</option>
-                                    <option value="esewa">Esewa</option>
-                                </select>
-                            </div>
-                            <p class="mt-2 text-sm text-gray-600">
-                                Upload an Excel file with the following columns:
-                                <span
-                                    class="font-medium text-gray-800">sn(Optional),date_time,description,debit,credit,status,balance(Optional),channel</span>.
-                                You can download a <a href="{{ route('transaction.sample') }}"
-                                    class="text-blue-600 hover:underline">sample
-                                    file</a>.
-                            </p>
-                            <button type="submit" id="submitBtn"
-                                class="bg-blue-600 text-white px-4 py-2 mt-2 rounded hover:bg-blue-700">
-                                Import
-                            </button>
+        @include('user.transaction.partials.transactionTableblock')
 
-                        </form>
-                        <div>
-                            <a href="{{ route('transaction.create') }}"
-                                class="bg-green-600 px-4 py-2 mt-2 text-sm mr-5 text-white  rounded-md md:block md:w-fit hover:bg-green-800">
-                                Add Transaction</a>
-                        </div>
-                    </div>
-
-                    <form action="{{ route('transaction.index') }}" method="GET"
-                        class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        @csrf
-                        <div>
-                            <label for="year_month" class="block text-sm font-medium text-gray-700">Month</label>
-                            <input id="year_month" name="year_month" type="month"
-                                value="{{ request('year_month') ?? '' }}"
-                                class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
-                        </div>
-                        <div>
-                            <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
-                            <select name="year" id="year"
-                                class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
-                                @for ($year = now()->year; $year >= 2000; $year--)
-                                    <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
-                                        {{ $year }}
-                                    </option>
-                                @endfor
-                                <option value="all" {{ request('year') == 'all' ? 'selected' : '' }}>All</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
-                            <input id="date" value="{{ request('date') ?? '' }}" name="date" type="date"
-                                class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
-                        </div>
-                        <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                            <input id="description" name="description" type="text"
-                                value="{{ request('description') ?? '' }}"
-                                class="mt-1 block w-full border border-gray-300 rounded px-3 py-2">
-                        </div>
-                        <div class="md:col-span-3 flex gap-4 mt-4">
-                            <button type="submit"
-                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded shadow transition">
-                                Submit
-                            </button>
-
-                            <a href="{{ route('transaction.index') }}"
-                                class="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400">Clear</a>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </details>
-
-        <div class="bg-white p-5 shadow-md rounded">
-
-            <div class="mb-5 flex flex-col md:flex-row justify-between gap-4 text-center">
-                {{-- Transactions Block --}}
-                <div
-                    class="bg-white border-l-4 border-blue-400 shadow-md rounded-lg p-4 w-full md:w-1/2 transition hover:scale-[1.01] hover:shadow-lg">
-                    <h4 class="text-xl font-semibold text-blue-700 mb-2">📂 Transactions Summary</h4>
-                    <div class="text-lg space-y-1">
-                        <p>Total Transactions: <strong>{{ $total_transaction }}</strong></p>
-                        <p>Total Income: <strong>Rs.{{ $total_income }}</strong></p>
-                        <p>Total Spent: <strong>Rs.{{ $total_spent }}</strong></p>
-                    </div>
-                </div>
-                {{-- Forecast Block --}}
-                <div
-                    class="bg-white border-l-4 border-green-700 shadow-lg rounded-lg p-4 w-full md:w-1/2  transition hover:scale-[1.02] hover:shadow-xl">
-                    <h4 class="text-xl font-semibold text-green-800 mb-2">📊 Forecast Summary</h4>
-                    <div class="text-lg space-y-1 ">
-                        <p>Over all forecast: <strong>Rs.{{ $over_all_forecast }}</strong></p>
-                        {{-- <p>Three month forecast: <strong>Rs.{{ $three_month_forecast }}</strong></p> --}}
-                        @if ($percent_change != 0)
-                            <p class="flex justify-center">Percentage Change:
-                                @if ($percent_change['type'] === 'increase')
-                                    <span title="Compared to last month, the expenses has increased"
-                                        class="text-white bg-red-600 rounded-lg px-1 ml-2 font-bold">
-                                        ↑
-                                    </span>
-                                @else
-                                    <span title="Compared to last month, the expenses has decreased"
-                                        class="text-white bg-green-600 rounded-lg px-1 ml-2 font-bold">
-                                        ↓
-                                    </span>
-                                @endif
-                                <strong class="">{{ $percent_change['change'] }} % </strong>
-
-                            </p>
-                        @endif
-                        <p class="animate-pulse">Linear Regression forecast (next month):
-                            <strong>Rs.{{ $linear_regression_forecast }}</strong>
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full border border-gray-300 text-sm text-gray-800">
-                    <thead class="bg-gray-200 text-left font-semibold">
-                        <tr>
-                            <th class="border px-4 py-2">ID</th>
-                            {{-- <th class="border px-4 py-2">Date & Time</th> --}}
-                            <th class="border px-4 py-2">
-                                @if (request()->get('sort_by') === 'date_time' && request()->get('sort_order') === 'desc')
-                                    <a
-                                        href="{{ request()->fullUrlWithQuery(['sort_by' => 'date_time', 'sort_order' => 'asc']) }}">
-                                        Date ↑
-                                    </a>
-                                @else
-                                    <a
-                                        href="{{ request()->fullUrlWithQuery(['sort_by' => 'date_time', 'sort_order' => 'desc']) }}">
-                                        Date ↓
-                                    </a>
-                                @endif
-                            </th>
-
-                            <th class="border px-4 py-2">Description</th>
-                            {{-- <th class="border px-4 py-2">Debit (Rs.)</th> --}}
-                            <th class="border px-4 py-2">
-                                @if (request()->get('sort_by') === 'debit' && request()->get('sort_order') === 'desc')
-                                    <a
-                                        href="{{ request()->fullUrlWithQuery(['sort_by' => 'debit', 'sort_order' => 'asc']) }}">
-                                        Debit (Rs.) ↑
-                                    </a>
-                                @else
-                                    <a
-                                        href="{{ request()->fullUrlWithQuery(['sort_by' => 'debit', 'sort_order' => 'desc']) }}">
-                                        Debit (Rs.) ↓
-                                    </a>
-                                @endif
-                            </th>
-                            <th class="border px-4 py-2">
-                                @if (request()->get('sort_by') === 'credit' && request()->get('sort_order') === 'desc')
-                                    <a
-                                        href="{{ request()->fullUrlWithQuery(['sort_by' => 'credit', 'sort_order' => 'asc']) }}">
-                                        Credit (Rs.) ↑
-                                    </a>
-                                @else
-                                    <a
-                                        href="{{ request()->fullUrlWithQuery(['sort_by' => 'credit', 'sort_order' => 'desc']) }}">
-                                        Credit (Rs.) ↓
-                                    </a>
-                                @endif
-                            </th>
-                            <th class="border px-4 py-2">Tag</th>
-                            <th class="border px-4 py-2">Status</th>
-                            <th class="border px-4 py-2">Channel</th>
-                            <th class="border px-4 py-2 text-center">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($transactions as $item)
-                            <tr class="hover:bg-gray-100 transition">
-                                <td class="border px-4 py-2">{{ $item->id }}</td>
-                                <td class="border px-4 py-2">{{ $item->date_time }}</td>
-                                <td class="border px-4 py-2">{{ $item->description }}</td>
-                                <td class="border px-4 py-2">{{ $item->debit }}</td>
-                                <td class="border px-4 py-2">{{ $item->credit }}</td>
-                                <td class="border px-4 py-2">{{ ucwords(str_replace('_', ' ', $item->tag)) ?? '-' }}</td>
-                                <td class="border px-4 py-2">{{ $item->status }}</td>
-                                <td class="border px-4 py-2">{{ $item->channel }}</td>
-                                <td class="border px-4 py-2 text-center">
-                                    <div class="inline-flex gap-2">
-                                        <a href="{{ route('transaction.edit', $item->id) }}"
-                                            class="bg-gray-700 hover:bg-gray-800 text-white px-3 py-1 rounded text-xs">
-                                            Edit
-                                        </a>
-                                        <form method="post" action="{{ route('transaction.delete', $item->id) }}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs">
-                                                Delete
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="9" class="text-center text-gray-500 py-4">No transaction data available.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-        <div class="mt-6 mb-4">
-            {{ $transactions->links() }}
-        </div>
-
+        {{-- Charts and Analytics --}}
         @if ($total_transaction != 0)
             @if ($monthly_expenses->isNotEmpty())
                 <div class="bg-white px-35 py-6 rounded-2xl shadow-md w-full items-center text-center mb-4">
@@ -377,8 +129,6 @@
                         if (elements.length > 0) {
                             const idx = elements[0].index;
                             const selectedHour = labels[idx];
-                            console.log('Selected hour:', selectedHour);
-                            // Redirect with hour filter
                             const url = new URL(window.location.href);
                             url.searchParams.set('hour', selectedHour);
                             window.location.href = url.toString();
@@ -411,6 +161,18 @@
                 },
                 options: {
                     responsive: true,
+                    onClick: function(evt, elements) {
+                        console.log(elements);
+                        if (elements.length > 0) {
+                            const idx = elements[0].index;
+                            const selectedExpenses = doughnutLabel[idx];
+                            const url = new URL(window.location.href);
+                            url.searchParams.set('description', selectedExpenses);
+                            url.searchParams.set('sort_order', 'desc');
+                            url.searchParams.set('sort_by', 'debit');
+                            window.location.href = url.toString();
+                        }
+                    }
                 }
             });
         }
