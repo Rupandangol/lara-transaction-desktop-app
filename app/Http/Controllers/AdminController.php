@@ -23,16 +23,18 @@ class AdminController extends Controller
                     ->title('Are you sure?')
                     ->buttons(['Yes, delete', 'Cancel'])
                     ->show('This will permanently delete Admin and its data. This action cannot be undone.');
-                if (! $confirmed) {
-                    $admin->delete();
-                    Alert::new()
-                        ->title('Success')
-                        ->show('Admin deleted successfully.');
+                if ($confirmed) {
+                    throw new \Exception('Action cancelled', 400);
                 }
+                $admin->delete();
+                Alert::new()
+                    ->title('Success')
+                    ->show('Admin deleted successfully.');
             } else {
                 Alert::new()
                     ->title('Not Found')
                     ->show('Admin is not found.');
+                throw new \Exception('Admin not found', 404);
             }
 
             return redirect()->back()->with([
