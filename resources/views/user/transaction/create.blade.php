@@ -7,7 +7,12 @@
 @section('content')
     <div class="flex justify-center p-5">
         <div class="bg-white shadow-lg rounded-md p-8 w-full max-w-lg">
-            <h1 class="text-lg font-medium text-gray-700">Create Transaction</h1>
+            <div class="flex justify-between">
+                <h1 class="text-lg font-medium text-gray-700">Create Transaction</h1>
+                <a href="{{ route('transaction.upload.transaction.image.index') }}"
+                    class="bg-green-500 hover:bg-green-600 px-2 py-1 text-white rounded-md shadow-md">Upload through bill
+                    image</a>
+            </div>
             <hr class="mb-4 mt-1">
             <form action="{{ route('transaction.store') }}" method="POST">
                 @csrf
@@ -82,8 +87,8 @@
                     <select name="tag" id="tag"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring focus:ring-green-200 focus:border-green-500 p-2">
                         @foreach ($tag_list as $item)
-                            <option @if (old('tag') == $item->value) selected @endif value="{{$item->value}}">
-                                {{str_replace('_',' ',$item->name)}}
+                            <option @if (old('tag') == $item->value) selected @endif value="{{ $item->value }}">
+                                {{ str_replace('_', ' ', $item->name) }}
                             </option>
                         @endforeach
                     </select>
@@ -100,4 +105,15 @@
                 href="{{ route('transaction.index') }}">Back</a>
         </div>
     </div>
+@endsection
+
+@section('content-footer')
+    <script>
+        document.getElementById('addphoto').addEventListener('click', function() {
+            const r = document.getElementById('r');
+            this.classList.remove('bg-green-500', 'hover:bg-green-600');
+            this.classList.add('bg-gray-500');
+            r.classList.remove('hidden');
+        });
+    </script>
 @endsection

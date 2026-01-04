@@ -65,7 +65,6 @@ class TransactionsController extends Controller
             'transactions' => $transactions,
             ...$aggregates,
         ];
-
         return view('user.transaction.index', $data);
     }
 

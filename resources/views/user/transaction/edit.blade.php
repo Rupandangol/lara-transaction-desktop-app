@@ -102,7 +102,8 @@
 
             </form>
             <a class="block text-center mt-4 w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-md"
-                href="{{ route('transaction.index') }}">Back</a>
+                href="{{ url()->previous() }}">Back</a>
         </div>
     </div>
 @endsection
+
