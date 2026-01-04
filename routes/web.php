@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\TempTransactionController;
 use App\Http\Controllers\TransactionsController;
+use App\Http\Controllers\UploadTransactionImageController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -15,6 +17,11 @@ Route::group(['middleware' => 'auth'], function () {
         Route::get('/sample', [TransactionsController::class, 'sample'])->name('transaction.sample');
         Route::delete('/purge', [TransactionsController::class, 'purge'])->name('transaction.purge');
         Route::get('/create', [TransactionsController::class, 'create'])->name('transaction.create');
+        Route::get('/temp-transaction', [TempTransactionController::class, 'index'])->name('temp.transaction.index');
+        Route::delete('/temp-transaction/{id}', [TempTransactionController::class, 'destroy'])->name('temp.transaction.destroy');
+        Route::get('/temp-transaction-approve', [TempTransactionController::class, 'approve'])->name('temp.transaction.approve');
+        Route::get('/upload-transaction', [UploadTransactionImageController::class, 'index'])->name('transaction.upload.transaction.image.index');
+        Route::post('/upload-transaction', [UploadTransactionImageController::class, 'store'])->name('transaction.upload.transaction.image.store');
         Route::get('/export', [TransactionsController::class, 'export'])->name('transaction.export');
         Route::post('/store', [TransactionsController::class, 'store'])->name('transaction.store');
         Route::get('/{id}/edit', [TransactionsController::class, 'edit'])->name('transaction.edit');
