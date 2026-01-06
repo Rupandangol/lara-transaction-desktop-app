@@ -5,7 +5,7 @@
         @php
             $filters = collect([
                 'description' => request('description'),
-                'year' => request('year'),
+                'year' => request('year')?? now()->format('Y'),
                 'year_month' => request('year_month'),
                 'hour' => request('hour'),
             ])->filter();
