@@ -5,6 +5,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TempTransactionController;
 use App\Http\Controllers\TransactionsController;
 use App\Http\Controllers\UploadTransactionImageController;
+use App\Http\Controllers\UserAiKeyController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -32,5 +33,10 @@ Route::group(['middleware' => 'auth'], function () {
     });
     Route::patch('/user', [UserController::class, 'update'])->name('user.update');
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::group(['prefix' => '/user-ai-key'], function () {
+        Route::get('/', [UserAiKeyController::class, 'index'])->name('user-ai-key.index');
+        Route::post('/', [UserAiKeyController::class, 'store'])->name('user-ai-key.store');
+        Route::patch('/{id}', [UserAiKeyController::class, 'update'])->name('user-ai-key.update');
+    });
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 });
