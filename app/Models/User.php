@@ -45,4 +45,23 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function aiKeys()
+    {
+        return $this->hasMany(UserAiKey::class);
+    }
+
+    public function hasActiveKey(): bool
+    {
+        return $this->aiKeys()
+            ->where('is_active', true)
+            ->exists();
+    }
+
+    public function activeAiKey()
+    {
+        return $this->aiKeys()
+            ->where('is_active', true)
+            ->firstOrFail();
+    }
 }

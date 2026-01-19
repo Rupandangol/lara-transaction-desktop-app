@@ -34,9 +34,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::patch('/user', [UserController::class, 'update'])->name('user.update');
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::group(['prefix' => '/user-ai-key'], function () {
-        Route::get('/', [UserAiKeyController::class, 'index'])->name('user-ai-key.index');
         Route::post('/', [UserAiKeyController::class, 'store'])->name('user-ai-key.store');
-        Route::patch('/{id}', [UserAiKeyController::class, 'update'])->name('user-ai-key.update');
+        Route::patch('/{id}', [UserAiKeyController::class, 'switch'])->name('user-ai-key.switch');
+        Route::delete('/{id}', [UserAiKeyController::class, 'destroy'])->name('user-ai-key.destroy');
     });
     Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 });
