@@ -10,4 +10,6 @@
     @include('settings.partials.export-transaction');
 
     @include('settings.partials.purge-transaction');
+
+    @include('settings.partials.ai-api-key-setting');
 @endsection

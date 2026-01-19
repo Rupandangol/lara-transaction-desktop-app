@@ -12,7 +12,7 @@ use Native\Laravel\Facades\Alert;
 
 final class SaveImageDataToTempService
 {
-    public function convert($images)
+    public function convert(array $images, string $apiKey)
     {
         $parts = [];
         $parts[] = [
@@ -30,7 +30,7 @@ final class SaveImageDataToTempService
             'verify' => false,
         ])->withHeaders([
             'content-type' => 'application/json',
-            'x-goog-api-key' => env('GEMINI_API_KEY'),
+            'x-goog-api-key' => $apiKey,
         ])->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', [
             'contents' => [
                 [
