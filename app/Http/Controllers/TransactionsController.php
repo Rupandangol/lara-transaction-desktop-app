@@ -37,7 +37,7 @@ class TransactionsController extends Controller
             $query->whereDate('date_time', Carbon::parse($request->get('date'))->format('Y-m-d'));
         }
         if ($request->filled('description')) {
-            $query->where('description', 'like', '%' . $request->get('description') . '%');
+            $query->where('description', 'like', '%'.$request->get('description').'%');
         }
         if ($request->filled('hour')) {
             $query->whereRaw("strftime('%H', date_time) = ?", [str_pad($request->get('hour'), 2, '0', STR_PAD_LEFT)]);
@@ -65,6 +65,7 @@ class TransactionsController extends Controller
             'transactions' => $transactions,
             ...$aggregates,
         ];
+
         return view('user.transaction.index', $data);
     }
 
@@ -182,7 +183,7 @@ class TransactionsController extends Controller
         } catch (\Exception $e) {
             Alert::new()
                 ->type('error')
-                ->title('Error:' . $e->getCode())
+                ->title('Error:'.$e->getCode())
                 ->show($e->getMessage());
         }
 
@@ -267,7 +268,7 @@ class TransactionsController extends Controller
         } catch (\Exception $e) {
             Alert::new()
                 ->type('error')
-                ->title('Error:' . $e->getCode())
+                ->title('Error:'.$e->getCode())
                 ->show($e->getMessage());
         }
 
@@ -276,7 +277,7 @@ class TransactionsController extends Controller
 
     public function export()
     {
-        $filename = 'transaction_' . Carbon::now()->format('Ymdhsi') . '.csv';
+        $filename = 'transaction_'.Carbon::now()->format('Ymdhsi').'.csv';
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\"",

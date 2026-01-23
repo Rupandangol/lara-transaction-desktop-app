@@ -7,68 +7,38 @@ use App\Enum\StatusEnum;
 use App\Enum\TagEnum;
 use App\Models\TempTransaction;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Native\Laravel\Facades\Alert;
 
 final class SaveImageDataToTempService
 {
-    public function convert(array $images, string $apiKey)
+    public function convert(array $images)
     {
-        $parts = [];
-        $parts[] = [
-            'text' => $this->prompt(),
-        ];
-        foreach ($images as $image) {
-            $parts[] = [
-                'inline_data' => [
-                    'mime_type' => $image->getMimeType(),
-                    'data' => base64_encode(file_get_contents($image)),
-                ],
-            ];
-        }
-        $response = Http::withOptions([
-            'verify' => false,
-        ])->withHeaders([
-            'content-type' => 'application/json',
-            'x-goog-api-key' => $apiKey,
-        ])->post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', [
-            'contents' => [
-                [
-                    'parts' => $parts,
-                ],
-            ],
-        ]);
-        if ($response->failed()) {
+        $geminiClient = new GeminiClient;
+        $response = $geminiClient
+            ->setPrompt($this->prompt())
+            ->attachFiles($images)
+            ->send();
+        if ($response['status'] == 'failed') {
             Alert::new()
                 ->title('Gemini Issue')
-                ->show($response->body());
+                ->show($response['message'] ?? '');
 
             return [];
         }
-        if ($response->successful()) {
-            $output = $response->json();
-            $resultText = $output['candidates'][0]['content']['parts'][0]['text'];
-            preg_match('/\{.*\}/s', $resultText, $matches);
-            if (! empty($matches)) {
-                $json = $matches[0];
-                $data = json_decode($json, true);
-                foreach ($data['data'] as $item) {
-                    TempTransaction::create([
-                        'date_time' => $item['date'] ?? now()->format('Y-m-d H:i:s'),
-                        'description' => $item['vendor'] ?? 'Unclear',
-                        'debit' => $item['total_amount'] ?? 0,
-                        'tag' => $item['tag'] ?? TagEnum::OTHERS,
-                        'status' => StatusEnum::COMPLETE,
-                        'channel' => ChannelEnum::CASH,
-                        'user_id' => Auth::user()->id,
-                    ]);
-                }
-
-                return TempTransaction::where('user_id', Auth::user()->id)->get();
-            }
+        $data = $response['data'];
+        foreach ($data ?? [] as $item) {
+            TempTransaction::create([
+                'date_time' => $item['date'] ?? now()->format('Y-m-d H:i:s'),
+                'description' => $item['vendor'] ?? 'Unclear',
+                'debit' => $item['total_amount'] ?? 0,
+                'tag' => $item['tag'] ?? TagEnum::OTHERS,
+                'status' => StatusEnum::COMPLETE,
+                'channel' => ChannelEnum::CASH,
+                'user_id' => Auth::user()->id,
+            ]);
         }
 
-        return [];
+        return TempTransaction::where('user_id', Auth::user()->id)->get();
     }
 
     public function prompt()
