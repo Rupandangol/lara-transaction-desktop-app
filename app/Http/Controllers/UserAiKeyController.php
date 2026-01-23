@@ -20,7 +20,7 @@ class UserAiKeyController extends Controller
         } catch (\Exception $e) {
             Alert::new()
                 ->type('error')
-                ->title('Error:' . $e->getCode())
+                ->title('Error:'.$e->getCode())
                 ->show($e->getMessage());
         }
 
@@ -54,7 +54,7 @@ class UserAiKeyController extends Controller
         } catch (\Exception $e) {
             Alert::new()
                 ->type('error')
-                ->title('Error:' . $e->getCode())
+                ->title('Error:'.$e->getCode())
                 ->show($e->getMessage());
         }
 

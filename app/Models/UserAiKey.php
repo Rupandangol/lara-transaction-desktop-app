@@ -27,5 +27,4 @@ class UserAiKey extends Model
     {
         return '****'.substr($this->api_key, -4);
     }
-
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\UserAiKey;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,13 +17,15 @@ class EnsureGeminiKeyIsActive
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::user()->hasActiveKey()) {
+        if (! Auth::user()->hasActiveKey()) {
             Alert::new()
                 ->type('error')
                 ->title('AI not ready')
                 ->show('Your AI key is turned off or missing. Please enable it in settings.');
+
             return redirect(route('settings.index'))->withFragment('list-section');
         }
+
         return $next($request);
     }
 }
