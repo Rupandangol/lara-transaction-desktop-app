@@ -116,26 +116,34 @@ class GeminiClient
         }
     }
 
-    private function extractJson($text)
+    private function extractJson(string $text): array
     {
-
         $trim = trim($text);
-        if (! preg_match('/\{.*\}/s', $trim, $matches)) {
+
+        $decoded = json_decode($trim, true);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
             return [
-                'status' => 'failed',
-                'message' => 'no data',
+                'status' => 'success',
+                'data' => $decoded,
             ];
         }
-        $data = json_decode($matches[0], true);
 
-        return json_last_error() === JSON_ERROR_NONE ?
-            [
-                'status' => 'success',
-                ...$data,
-            ] :
-            [
-                'status' => 'failed',
-                'message' => 'no data',
-            ];
+        if (preg_match('/(\{.*\}|\[.*\])/s', $trim, $matches)) {
+            $decoded = json_decode($matches[1], true);
+
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return [
+                    'status' => 'success',
+                    'data' => $decoded,
+                ];
+            }
+        }
+
+        return [
+            'status' => 'failed',
+            'message' => 'Invalid JSON returned by AI',
+            'raw' => $text,
+        ];
     }
 }
