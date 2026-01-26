@@ -33,7 +33,7 @@ final class GetTransactionsAggregates
                 $percentChangeForecast = (new PercentChangeForecast);
                 $percent_change = $percentChangeForecast->changePercent($monthly_expenses->last() ?? self::BASE_AMOUNT, $monthly_expenses->reverse()->skip(1)->first() ?? self::BASE_AMOUNT);
                 $percent_changes = collect($percentChangeForecast->changesPercent($monthly_expenses));
-                $linear_regression_forecast = (new LinearRegressionPredictionService)->predict($monthly_expenses);
+                $linear_regression_forecast = (new LinearRegressionPredictionService)->setData($monthly_expenses)->predict();
             }
             $top_expenses = (clone $query)->selectRaw('description , COUNT(*) as total,SUM(debit) as debit_sum')
                 ->where('credit', self::BASE_AMOUNT)

@@ -41,52 +41,59 @@ final class SaveImageDataToTempService
         return TempTransaction::where('user_id', Auth::user()->id)->get();
     }
 
-    public function prompt()
+    public function prompt(): string
     {
-        return <<<'TEXT'
-    You are an OCR parser specialized in parsing bills. Multiple bill images will be sent.
+        return <<<'XML'
+<prompt>
+    <role>
+        You are an OCR parser specialized in parsing bills.
+        Multiple bill images will be sent.
+    </role>
 
-    TASK:
-    Extract data from bill images.
-    
-    TAGS (allowed values only):
-    [
-    "bill_sharing",
-    "family_expenses",
-    "food_and_drink",
-    "entertainment",
-    "utilities",
-    "travel",
-    "shopping",
-    "groceries",
-    "lend",
-    "personal_use",
-    "ride_sharing",
-    "others"
-    ]
+    <task>
+        Extract structured data from each bill image.
+    </task>
 
+    <allowed_tags>
+        <tag>bill_sharing</tag>
+        <tag>family_expenses</tag>
+        <tag>food_and_drink</tag>
+        <tag>entertainment</tag>
+        <tag>utilities</tag>
+        <tag>travel</tag>
+        <tag>shopping</tag>
+        <tag>groceries</tag>
+        <tag>lend</tag>
+        <tag>personal_use</tag>
+        <tag>ride_sharing</tag>
+        <tag>others</tag>
+    </allowed_tags>
 
-    OUTPUT FORMAT (STRICT):
-    {
-        "data":[
-            {
-                "date":"YYYY-MM-DD or null",
-                "vendor":"string or null",
-                "total_amount":"number or null",
-                "tag":"one of the allowed tag values above, or null"
-            }
-        ]
-    }
-    
-    RULES:
-    - Return ONLY valid JSON.
-    - Do not write any text outside the JSON object.
-    - Do NOT include markdown, comments, or explanation.
-    - Use null for missing, unreadable, or uncertain fields.
-    - For tag: choose ONLY one from the allowed list. If unsure, return null.
-    - Do NOT create any keys that are not in the structure.
-    - Follow the structure EXACTLY.
-    - Do NOT add trailing commas.
-    TEXT;
+    <output_contract>
+        <format>json</format>
+        <schema>
+            <data>
+                <item>
+                    <date>YYYY-MM-DD or null</date>
+                    <vendor>string or null</vendor>
+                    <total_amount>number or null</total_amount>
+                    <tag>one allowed tag or null</tag>
+                </item>
+            </data>
+        </schema>
+    </output_contract>
+
+    <rules>
+        <rule>Return ONLY valid JSON.</rule>
+        <rule>Do not include text outside the JSON object.</rule>
+        <rule>No markdown, comments, or explanations.</rule>
+        <rule>Use null for missing, unreadable, or uncertain fields.</rule>
+        <rule>Choose ONLY one tag from allowed_tags or null.</rule>
+        <rule>Do NOT create additional keys.</rule>
+        <rule>Follow the schema EXACTLY.</rule>
+        <rule>No trailing commas.</rule>
+    </rules>
+</prompt>
+XML;
     }
 }

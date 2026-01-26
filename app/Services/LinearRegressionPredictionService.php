@@ -8,7 +8,16 @@ class LinearRegressionPredictionService
 
     const DENOMINATOR = 0;
 
-    public function predict($data)
+    public function __construct(protected $data = null) {}
+
+    public function setData($data): static
+    {
+        $this->data = $data;
+
+        return $this;
+    }
+
+    public function predict()
     {
         // linear equation
         // y=b0 + b1x;
@@ -16,13 +25,13 @@ class LinearRegressionPredictionService
         // y=output
         // b1=slope
         // b0= intercept
-        if ($data->isEmpty()) {
+        if ($this->data->isEmpty()) {
             return 0;
         }
-        $x = $data->map(function ($item, $index) {
+        $x = $this->data->map(function ($item, $index) {
             return $index + 1;
         })->toArray();
-        $y = $data->map(function ($item) {
+        $y = $this->data->map(function ($item) {
             return $item->total_spent;
         })->toArray();
         $n = count($x);
